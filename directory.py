@@ -3,6 +3,7 @@ import os
 import dicom
 import sys
 import tarfile
+import shutil
 
 SEP = os.path.sep
 D_SEP = os.path.sep + os.path.sep
@@ -30,9 +31,15 @@ def createPath(pathDir):
 
 
 def delete(pathDir):
-    pathDir = sanitizePath(pathDir)
-    os.unlink(pathDir)
-    return True
+    if isFile(pathDir):
+        pathDir = sanitizePath(pathDir)
+        os.unlink(pathDir)
+        return True
+    elif isDir(pathDir):
+        shutil.rmtree(pathDir)
+        return True
+    else:
+        raise "path or file ("+ pathDir +") given to delete is not existent"
 
 
 def isDir(pathDir):
