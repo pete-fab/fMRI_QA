@@ -7,17 +7,6 @@ import os
 import directory
 import bxh
 
-ATTRIBUTE_LIST = ['percentFluc', 'drift', 'driftfit',
-                 'mean', 'SNR', 'SFNR',
-                 'rdc',
-                 'minFWHMX', 'meanFWHMX', 'maxFWHMX',
-                 'minFWHMY', 'meanFWHMY', 'maxFWHMY',
-                 'minFWHMZ', 'meanFWHMZ', 'maxFWHMZ',
-                 'dispCMassX', 'driftCMassX', 'dispCMassY',
-                 'driftCMassY', 'dispCMassZ', 'driftCMassZ',
-                 'meanGhost', 'meanBrightGhost']
-
-
 def getAttributeValue(statsNode, attributeName):
     for child in statsNode.findall("./observation[@name='" + attributeName + "']"):
         return child.text
@@ -80,13 +69,13 @@ def getDataList(workingDir, attributeList):
 
     return dataList
 
-def localSummary(workingDir, attributeList):
+def localSummary(workingDir, attributeList, local_summary_file):
     finalAttributeList = addSeriesAttributes(attributeList)
     dataList = getDataList(workingDir, attributeList)
-    saveCsv(directory.joinPath([workingDir, 'local_summary.csv']), dataList, finalAttributeList)
+    saveCsv(directory.joinPath([workingDir, local_summary_file]), dataList, finalAttributeList)
 
 
-def globalSummary(workingDir, attributeList):
+def globalSummary(workingDir, attributeList, file_name):
     finalAttributeList = addSeriesAttributes(attributeList)
     pathList = directory.getChildrenPaths(workingDir)
     dataList = []
@@ -96,4 +85,24 @@ def globalSummary(workingDir, attributeList):
         data = getDataList(directory.joinPath([currentPath, bxh.ANALYSIS_FOLDER]), attributeList)
         dataList.extend(data)
 
-    saveCsv(directory.joinPath([workingDir, 'global_summary.csv']), dataList, finalAttributeList)
+    saveCsv(directory.joinPath([workingDir, file_name]), dataList, finalAttributeList)
+
+def readCSV(file_path):
+    if not directory.isFile(file_path):
+        raise NameError('File '+ file_path +' does not exist and cannot be read by readCSV.')
+    column_names = []
+    data = {}
+    with open(file_path, 'rb') as csvfile:
+        csv_reader = csv.DictReader(csvfile, delimiter=',')
+        isHeaderRow = True
+        for row in csv_reader:
+            if isHeaderRow == False:
+                for i, val in enumerate(column_names):
+                    data[val].append(row[val])
+            else:
+                column_names = row
+                for i, val in enumerate(column_names):
+                    data[val] = [row[val]]
+                isHeaderRow = False
+    return data
+

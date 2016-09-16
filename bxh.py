@@ -32,7 +32,7 @@ def fmriQaAnalysis(workingDir,sliceNumber):
     subprocess.call(command, cwd=workingDir, shell=True)
 
 
-def analyzeSlices(workingDir):
-    for zslice in xrange(3, 30, 3):
+def analyzeSlices(workingDir,sliceList):
+    for zslice in sliceList:
         fmriQaAnalysis(workingDir, zslice)
 
