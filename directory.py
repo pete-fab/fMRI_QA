@@ -4,9 +4,11 @@ import dicom
 import sys
 import tarfile
 import shutil
+import hashfile
 
 SEP = os.path.sep
 D_SEP = os.path.sep + os.path.sep
+ARCHIVE_EXTENSION = ".tar.gz"
 
 
 def sanitizePath(pathDir):
@@ -34,6 +36,7 @@ def delete(pathDir):
     if isFile(pathDir):
         pathDir = sanitizePath(pathDir)
         os.unlink(pathDir)
+        hashfile.remove(pathDir)
         return True
     elif isDir(pathDir):
         shutil.rmtree(pathDir)
@@ -97,7 +100,7 @@ def isDICOM(filePath):
         return False
 
     try:
-        ds = dicom.read_file(filePath)
+        dicom.read_file(filePath)
     except dicom.errors.InvalidDicomError:
         return False
     except:
@@ -116,25 +119,67 @@ def isContentsDICOM(pathDir):
     return ret
 
 
-def compress(path):
-    path = sanitizePath(path)
-    folderName = getNameFromPath(path)
-    tar = tarfile.open(joinPath([path, folderName+".tar.gz"]), "w:gz")
-    pathChildren = getChildrenPaths(path)
-    for child in pathChildren:
-        tar.add(child, getNameFromPath(child)) #second argument required to add relative paths into tar
-    tar.close()
-    for child in pathChildren:
-        delete(child)
-
-def decompress(path):
-    path = sanitizePath(path)
-    files = getFilePaths(path)
-
-    for file in files:
-        if not file.endswith(".tar.gz"):
-            continue
-        tar = tarfile.open(file)
-        tar.extractall(path)
+def compress(dir_path):
+    dir_path = sanitizePath(dir_path)
+    archive_path = dir_path + ARCHIVE_EXTENSION
+    try:
+        tar = tarfile.open(archive_path, "w:gz")
+        tar.add(dir_path, getNameFromPath(dir_path))  # second argument required to add relative paths into tar
         tar.close()
-        delete(file)
+        delete(dir_path)
+        hashfile.save(archive_path)
+        return True
+    except OSError:
+        # when open() call was made to nonexistent file it was created. Need to close it and delete.
+        tar.close()
+        delete(archive_path)
+        raise OSError
+    except:
+        print "Compression of folder " + dir_path + " went wrong!"
+        raise RuntimeError
+
+
+def getFileName(filePath):
+    filePath = sanitizePath(filePath)
+    return os.path.basename(filePath)
+
+
+def getFileNameWithoutExtension(filePath):
+    filePath = sanitizePath(filePath)
+    return os.path.basename(os.path.splitext(filePath)[0])
+
+
+def getFileDirectory(filePath):
+    filePath = sanitizePath(filePath)
+    res = filePath.replace(SEP + os.path.basename(filePath), "")
+    return res
+
+
+def decompress(file_path):
+    file_path = sanitizePath(file_path)
+
+    if isFile(file_path) and file_path.endswith(ARCHIVE_EXTENSION):
+        if hashfile.verify(file_path):
+            tar = tarfile.open(file_path)
+            directory = getFileDirectory(file_path)
+            # name = getFileNameWithoutExtension(file_path)
+            tar.extractall(directory)
+            tar.close()
+            delete(file_path)
+            return True
+        else:
+            delete(file_path)
+            return False
+    else:
+        if isFile(file_path):
+            raise OSError("Attempted to decompress non-archive:", file_path)
+        else:
+            raise OSError("Attempted to decompress non existent file:", file_path)
+
+
+if __name__ == "__main__":
+    # print getFileName("a/b/c.txt")
+    hash = compress("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810")
+    print hash
+    # decompress("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810.tar.gz")
+    # print hash_file("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810.tar.gz")
