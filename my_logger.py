@@ -5,6 +5,7 @@ import inspect
 import logging
 import config
 import directory
+from time import gmtime, strftime
 
 
 class Singleton(type):
@@ -116,11 +117,16 @@ class GeneralLogger(logging.Logger):
         # print 'Function: '+info.function                       # __FUNCTION__ -> Main
         # print 'Line number: '+str(info.lineno)
 
+    def get_log_file_path(self):
+        return self.__l_path
+
 
 class RuntimeLogger(GeneralLogger):
     def __init__(self):
         GeneralLogger.__init__(self)
-        self.__l_path = directory.joinPath([self.get_log_dir(), config.RUNTIME_LOG])
+        self.__l_path = directory.joinPath([self.get_log_dir(),
+                                            "." + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + config.RUNTIME_LOG
+                                            ])
         self.__myhandler = logging.FileHandler(self.__l_path, mode='a', encoding=None, delay=False)
         self.__myhandler.setLevel(logging.INFO)
         self.__myhandler.setFormatter(self.get_formatter())
