@@ -10,7 +10,6 @@ SEP = os.path.sep
 D_SEP = os.path.sep + os.path.sep
 ARCHIVE_EXTENSION = ".tar.gz"
 
-
 def sanitizePath(pathDir):
     pathDir = pathDir.split('/')
     pathDir = SEP.join(pathDir)
@@ -65,12 +64,22 @@ def getChildrenPaths(pathDir):
     return paths
 
 
-def getFileNames(pathDir):
-    return [x[2] for x in os.walk(pathDir)][0]
+def getFileNames(path_dir, ext=""):
+    if ext == "":
+        return [x[2] for x in os.walk(path_dir)][0]
+    else:
+        # path_paths = getFilePaths(path_dir)
+        files = [x[2] for x in os.walk(path_dir)][0]
+        return filter(lambda x: getExtenstion(x) == ext, files)
 
 
-def getFilePaths(pathDir):
-    list = getFileNames(pathDir)
+def getExtenstion(file_path):
+    (root, ext) = os.path.splitext(file_path)
+    return ext
+
+
+def getFilePaths(pathDir, ext=""):
+    list = getFileNames(pathDir, ext)
     paths = []
     for child in list:
         paths.append(joinPath([pathDir, child]))
@@ -177,9 +186,20 @@ def decompress(file_path):
             raise OSError("Attempted to decompress non existent file:", file_path)
 
 
+def copy_file(source_path, destination_path):
+    source_path = sanitizePath(source_path)
+    destination_path = sanitizePath(destination_path)
+    if isFile(source_path):
+        shutil.copy2(source_path, destination_path)
+    else:
+        print "Tried to copy non-existent file"
+        raise OSError(source_path)
+
+
 if __name__ == "__main__":
     # print getFileName("a/b/c.txt")
-    hash = compress("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810")
-    print hash
+    # hash = compress("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810")
+    # print hash
+    getFileNames("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/", ".rlog")
     # decompress("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810.tar.gz")
     # print hash_file("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810.tar.gz")

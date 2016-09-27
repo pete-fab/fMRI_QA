@@ -1,4 +1,5 @@
 DATA_DIR = '/media/sf_MAGAZYN/Data/QA/QA_fMRI_data/'
+PACS_DIR = '/media/sf_PACS/'
 SLICE_RANGE = xrange(3, 30, 3)
 # ATTRIBUTE_LIST = ['percentFluc', 'drift', 'driftfit',
 #                   'mean', 'SNR', 'SFNR',
@@ -9,6 +10,13 @@ SLICE_RANGE = xrange(3, 30, 3)
 #                   'dispCMassX', 'driftCMassX', 'dispCMassY',
 #                   'driftCMassY', 'dispCMassZ', 'driftCMassZ',
 #                   'meanGhost', 'meanBrightGhost']
+ALL_LOG = 'all.log'
+RUNTIME_LOG = '.runtime.rlog'
+RUNTIME_START = 'qa_script_start'
+RUNTIME_STOP = 'qa_script_stop'
+
+IS_SAVE_ANALYSIS_FILES = True
+IS_SAVE_ORIGINAL_FILES = True
 
 IS_DEBUG = True
 DEBUG_DIR = '/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/'

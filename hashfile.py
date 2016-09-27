@@ -32,9 +32,12 @@ def __get_path(file_path):
 
 def __read(file_path):
     hash_path = __get_path(file_path)
-    with open(hash_path, 'r') as f:
-        hash = f.readline()
-    return hash
+    if directory.isFile(hash_path):
+        with open(hash_path, 'r') as f:
+            hash = f.readline()
+        return hash
+    else:
+        return False
 
 
 def save(file_path):

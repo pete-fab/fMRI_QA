@@ -13,13 +13,27 @@ def __get_attribute_value(statsNode, attributeName):
         return child.text
 
 
-def save_csv(filePath, dataSet, keySet):
-    with open(filePath, 'w') as f:
+def save_csv(file_path, data_set, key_set):
+    if directory.isFile(file_path):
+        directory.delete(file_path)
+    with open(file_path, 'w') as f:
         writer = csv.writer(f, delimiter=',')
-        writer.writerow(keySet)
-        for i in range(0, len(dataSet)):
-            writer.writerow(dataSet[i])
-    return hashfile.save(file_path)
+        writer.writerow(key_set)
+        for i in range(0, len(data_set)):
+            writer.writerow(data_set[i])
+    hash = hashfile.save(file_path)
+
+    # save backup file
+    try:
+        file_name = directory.getFileName(file_path)
+        file_directory = directory.getFileDirectory(file_path)
+        backup_path = directory.joinPath([file_directory, "." + file_name])
+        directory.copy_file(file_path, backup_path)
+        hashfile.save(backup_path)
+    except:
+        print "Failed to create backup csv file"
+        raise RuntimeError
+    return hash
 
 
 def __read_analysis_xml(filePath, attributeList):

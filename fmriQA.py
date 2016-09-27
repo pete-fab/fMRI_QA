@@ -5,9 +5,14 @@ import directory
 import shutil
 import qa_csv
 import plot_data
+import my_logger as l
+import hashfile
 
 
 def main():
+    al = l.AllLogger()
+    rl = l.RuntimeLogger()
+    rl.info(config.RUNTIME_START)
     if config.IS_DEBUG:
         slice_range = config.SLICE_RANGE_DEBUG
         rootDir = directory.sanitizePath(config.DEBUG_DIR)
@@ -16,6 +21,7 @@ def main():
         slice_range = config.SLICE_RANGE
         rootDir = directory.sanitizePath(config.DATA_DIR)
         atrribute_list = config.ATTRIBUTE_LIST
+
 
     directory.decompress(rootDir)
     dateFolderPaths = directory.getChildrenPaths(rootDir)
@@ -34,6 +40,10 @@ def main():
     data = qa_csv.read_csv(directory.joinPath([rootDir, config.GLOBAL_SUMMARY_FILE]))
     plot_data.plot_QA(data, config.PLOTS)
     directory.compress(rootDir)
+
+    # finish and has the runtime log
+    rl.info(config.RUNTIME_STOP)
+    hashfile.save(rl.get_log_file_path())
 
 
 def sanitizeDataFolders(pathList):
