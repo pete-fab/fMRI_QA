@@ -5,6 +5,7 @@ import sys
 import tarfile
 import shutil
 import hashfile
+from distutils.dir_util import copy_tree
 
 SEP = os.path.sep
 D_SEP = os.path.sep + os.path.sep
@@ -72,6 +73,15 @@ def getFileNames(path_dir, ext=""):
         files = [x[2] for x in os.walk(path_dir)][0]
         return filter(lambda x: getExtenstion(x) == ext, files)
 
+
+def getOneFilePath(path_dir, ext=""):
+    if ext == "":
+        first_file = next(joinPath([path_dir, f]) for f in os.listdir(path_dir) if isFile(joinPath([path_dir, f])))
+    else:
+        first_file = next((joinPath([path_dir, f]) for f in os.listdir(path_dir) if
+                           getExtenstion(f) == ext and isFile(joinPath([path_dir, f]))), "Error")
+
+    return first_file
 
 def getExtenstion(file_path):
     (root, ext) = os.path.splitext(file_path)
@@ -196,10 +206,19 @@ def copy_file(source_path, destination_path):
         raise OSError(source_path)
 
 
+def copy_folder_contents(source_directory_path, destination_dir_path):
+    if isDir(source_directory_path):
+        # destination will be creatred if doesn't exist
+        copy_tree(source_directory_path, destination_dir_path)
+        return
+
+    print "Tried to copy contents of non-existent directory."
+
 if __name__ == "__main__":
     # print getFileName("a/b/c.txt")
     # hash = compress("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810")
     # print hash
-    getFileNames("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/", ".rlog")
+    # getFileNames("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/", ".rlog")
+    getOneFilePath("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/", ".csv")
     # decompress("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810.tar.gz")
     # print hash_file("/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/20160810.tar.gz")
