@@ -1,11 +1,11 @@
 import dicom
 import config
-import directory
 import qa_csv
 import hashfile
 import my_logger as l
 import directory as d
 import datetime as dt
+import dicom
 
 la = l.AllLogger()
 
@@ -31,12 +31,12 @@ class RawData(object):
         self.__validate_summary_path(summary_file_path)
         self.__attrib_list = attribute_list
 
-
+        self.data = {}
         self.__datasets = []
         self.update_datasets()
 
     def update_datasets(self):
-        self.__retrieve_local_sets()
+        # self.__retrieve_local_sets()
         self.__retrieve_server_sets()
 
     def set_local_path(self, local_path):
@@ -56,25 +56,56 @@ class RawData(object):
         if self.__is_summary_valid:
             self.__get_data_from_summary()
             self.__get_date_from_data()
-            print self.__datetime
             # rlogs only useful to narrow down the date within the porgram run cycle
             self.__get_date_from_rlogs()
-            print self.__datetime
-
-        print self.__datetime
-        raise NotImplementedError
 
     def __retrieve_server_sets(self):
-        raise NotImplementedError
+        self.__datetime = dt.datetime(2016, 9, 10, 0, 0, 0)
+        self.__copy_valid_series_from_server()
+
+    def __copy_valid_series_from_server(self):
+        dir_names = d.getChildrenFolders(self.__s_path)
+        dir_names = sorted(dir_names, reverse=True)
+        for dn in dir_names:
+            datetime = dt.datetime(int(dn[0:4]), int(dn[4:6]), int(dn[6:]), 0, 0, 0)
+            if datetime > self.__datetime:
+                sub_paths = d.getChildrenPaths(d.joinPath([self.__s_path, dn]))
+                for sp in sub_paths:
+                    if (self.__verify_is_contains_QA(sp)):
+                        dest = d.joinPath([self.__l_path, d.getNameFromPath(sp, -2)])
+                        d.copy_folder_contents(sp, dest)
+            else:
+                break
+
+    def __verify_is_contains_QA(self, directory_path):
+
+        file = d.getOneFilePath(directory_path)
+        # In this directory there should be only DICOMs - so first file is good as any
+        if not d.isDICOM(file):
+            return False
+
+        d_info = dicom.read_file(file)
+        # check if this is QA fMRI series
+        if not (
+                        "RequestingPhysician" in d_info and "ReferringPhysicianName" in d_info):  # and "SeriesDescription" in d_info
+            return False
+
+        if not (
+                        d_info.RequestingPhysician == "fMRI" and d_info.ReferringPhysicianName == "QA"):  # and d_info.SeriesDescription == "fBIRN_epi"
+            return False
+
+        return True
+
+
 
     def __validate_summary_path(self, summary_path):
         if d.isFile(summary_path) and hashfile.verify(summary_path):
             self.__summary_path = summary_path
         else:
             # try backup summary
-            backup = "." + directory.getFileName(summary_path)
-            backup_path = directory.joinPath([self.__l_path, backup])
-            if directory.isFile(backup_path) and hashfile.verify(backup_path):
+            backup = "." + d.getFileName(summary_path)
+            backup_path = d.joinPath([self.__l_path, backup])
+            if d.isFile(backup_path) and hashfile.verify(backup_path):
                 self.__summary_path = backup_path
             else:
                 self.__summary_path = ""
@@ -100,13 +131,13 @@ class RawData(object):
                 raise BufferError(message)
 
     def __get_date_from_rlogs(self):
-        rlogs = directory.getFilePaths(self.__l_path, ".rlog")
+        rlogs = d.getFilePaths(self.__l_path, ".rlog")
         if len(rlogs) == 0:
             la.warn("No runtime logs found so far. It's OK if this is first run")
             return False
         for r_log in rlogs:
             if hashfile.verify(r_log):
-                name = directory.getFileName(r_log)
+                name = d.getFileName(r_log)
                 datetime = dt.datetime(int(name[1:5]), int(name[6:8]), int(name[9:11]), int(name[12:14]),
                                        int(name[15:17]), int(name[18:20]))
                 if datetime > self.__datetime:
@@ -115,11 +146,11 @@ class RawData(object):
                 la.warning("There exists rlog with modified hashfile: " + r_log)
 
     def __get_date_from_local_archives(self):
-        file_paths = directory.getFilePaths(self.__l_path, ".gz")
+        file_paths = d.getFilePaths(self.__l_path, ".gz")
         file_paths = sorted(file_paths)
         for f in file_paths:
             if hashfile.verify(f):
-                name = directory.getFileName(f)
+                name = d.getFileName(f)
                 datetime = dt.datetime(int(name[0:4]), int(name[4:6]), int(name[6:8]), 0, 0, 0)
                 if datetime > self.__datetime:
                     self.__datetime = datetime
@@ -129,30 +160,30 @@ class RawData(object):
 
         if not self.__is_archive_files_valid:
             for f in file_paths:
-                directory.delete(f)
+                d.delete(f)
                 la.warning("Removed: " + f)
 
     def __fix_summary_from_local_acrhives(self):
         if self.__is_archive_files_valid:
-            file_paths = directory.getFilePaths(self.__l_path, ".gz")
+            file_paths = d.getFilePaths(self.__l_path, ".gz")
             file_paths = sorted(file_paths)
             # unzip all
             for f in file_paths:
                 if hashfile.verify(f):
-                    directory.decompress(f)
+                    d.decompress(f)
                 else:
                     la.error("This file was verifired a moment ago and there is hash mismatch already: " + f)
                     raise OSError(f)
             # create global summary based on trusted local summaries
             qa_csv.save_global_summary(self.__l_path, self.__attrib_list,
-                                       directory.getFileName(self.__summary_path_unvalidated))
+                                       d.getFileName(self.__summary_path_unvalidated))
             la.info("Global summary remade from archive files")
             self.__is_summary_valid = True
 
             # zip the folders
-            dir_paths = directory.getChildrenPaths(self.__l_path)
+            dir_paths = d.getChildrenPaths(self.__l_path)
             for d in dir_paths:
-                directory.compress(d)
+                d.compress(d)
 
             return True
         else:
@@ -164,4 +195,4 @@ if __name__ == "__main__":
     else:
         atrribute_list = config.ATTRIBUTE_LIST
     data = RawData(config.DEBUG_DIR, config.PACS_DIR,
-                   directory.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]), atrribute_list)
+                   d.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]), atrribute_list)
