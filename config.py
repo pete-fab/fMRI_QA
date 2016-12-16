@@ -1,5 +1,8 @@
 DATA_DIR = '/media/sf_MAGAZYN/Data/QA/QA_fMRI_data/'
-PACS_DIR = '/media/sf_PACS/'
+PACS_DIR = '/home/brain/Documents/test_DICOM_storage/'
+DICOMSERVER_DIR = PACS_DIR
+DICOMSERVER_AET = 'PYNETDICOM'
+DICOMSERVER_PORT = 9999
 SLICE_RANGE = xrange(3, 30, 3)
 # ATTRIBUTE_LIST = ['percentFluc', 'drift', 'driftfit',
 #                   'mean', 'SNR', 'SFNR',
