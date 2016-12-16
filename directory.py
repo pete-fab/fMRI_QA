@@ -54,7 +54,10 @@ def isFile(path):
 
 
 def getChildrenFolders(pathDir):
-    return next(os.walk(pathDir))[1]
+    if isDir(pathDir):
+        return next(os.walk(pathDir))[1]
+    else:
+        return []
 
 # Returns immediate sub-folders absolute paths
 def getChildrenPaths(pathDir):
