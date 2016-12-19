@@ -58,9 +58,6 @@ class RawData(object):
             self.__get_dates_from_summary()
 
     def __retrieve_server_sets(self):
-        self.__copy_valid_series_from_server()
-
-    def __copy_valid_series_from_server(self):
         dir_names = d.getChildrenFolders(self.__s_path)
         dir_names = sorted(dir_names, reverse=True)
         for dn in dir_names:
@@ -68,10 +65,12 @@ class RawData(object):
             # print date_time
             if not self.__analysed_dates.issuperset(set([date_time])):
             # if datetime > self.__datetime:
-                sub_paths = d.getChildrenPaths(d.joinPath([self.__s_path, date_time]))
+                self.__analysed_dates.add(date_time)
+                date_string = "{:%Y%m%d}".format(date_time)
+                sub_paths = d.getChildrenPaths(d.joinPath([self.__s_path, date_string]))
                 for sp in sub_paths:
                     if self.__verify_is_contains_QA(sp):
-                        dest = d.joinPath([self.__l_path, d.getNameFromPath(sp, -2)])
+                        dest = d.joinPath([self.__l_path, date_string])
                         d.copy_folder_contents(sp, dest)
             else:
                 break
@@ -85,12 +84,14 @@ class RawData(object):
 
         d_info = dicom.read_file(file)
         # check if this is QA fMRI series
-        if not (
-                        "RequestingPhysician" in d_info and "ReferringPhysicianName" in d_info):  # and "SeriesDescription" in d_info
+        if not ("RequestingPhysician" in d_info
+                and "SeriesDescription" in d_info
+                and "ReferringPhysicianName" in d_info):
             return False
 
-        if not (
-                        d_info.RequestingPhysician == "fMRI" and d_info.ReferringPhysicianName == "QA"):  # and d_info.SeriesDescription == "fBIRN_epi"
+        if not (d_info.RequestingPhysician == "fMRI"
+                and d_info.SeriesDescription == "fBIRN_epi"
+                and d_info.ReferringPhysicianName == "QA"):
             return False
 
         return True
