@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 from netdicom import AE, StorageSOPClass, VerificationSOPClass
+import netdicom
 from dicom.dataset import Dataset, FileDataset
 from dicom import UID
 #import dicom
@@ -8,6 +9,10 @@ from dicom import UID
 import my_logger as l
 import directory
 import config
+import logging
+from time import sleep
+# netdicom.debug(True)
+
 
 al = l.AllLogger()
 rl = l.RuntimeLogger()
@@ -28,6 +33,7 @@ class DicomServer(AE):
 
 
     def OnReceiveStore(self, SOPClass, DS):
+        # sleep(0.1)
         rl.info('Received C-STORE')
         # do something with dataset. For instance, store it on disk.
         file_meta = Dataset()
@@ -36,7 +42,7 @@ class DicomServer(AE):
         file_meta.ImplementationClassUID = UID.pydicom_root_UID #"1.2.3.4"  # !!! Need valid UIDs here
         file_path = directory.joinPath([self.StorePath, str(DS.get('SeriesDate')), str(DS.get('SeriesDescription'))])
         directory.createPath(file_path)
-        filename = directory.joinPath([file_path, "I%05d" % DS.get('InstanceNumber') + '.dcm'])
+        filename = directory.joinPath([file_path, "I%05d" % DS.get('InstanceNumber') + '.'+config.DATA_EXT])
         ds = FileDataset(filename, {}, file_meta=file_meta, preamble="\0" * 128)
         ds.update(DS)
         ds.is_little_endian = True
