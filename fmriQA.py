@@ -1,12 +1,15 @@
 #!/usr/bin/env python
-import config
-import bxh
-import directory
 import shutil
-import qa_csv
-import plot_data
-import my_logger as l
+import sys
+
+import bxh
+import config
+import directory
 import hashfile
+import my_logger as l
+import plot_data
+import qa_csv
+import raw_data
 
 
 def main():
@@ -16,15 +19,18 @@ def main():
     if config.IS_DEBUG:
         slice_range = config.SLICE_RANGE_DEBUG
         rootDir = directory.sanitizePath(config.DEBUG_DIR)
-        atrribute_list = config.ATTRIBUTE_LIST_DEBUG
+        atrribute_list = config.ATTRIBUTE_LIST
     else:
         slice_range = config.SLICE_RANGE
         rootDir = directory.sanitizePath(config.DATA_DIR)
         atrribute_list = config.ATTRIBUTE_LIST
+    pacsDir = config.PACS_DIR
 
+    raw_data.RawData(rootDir, pacsDir, directory.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]),
+                   atrribute_list)
 
-    directory.decompress(rootDir)
     dateFolderPaths = directory.getChildrenPaths(rootDir)
+
     for dateFolderPath in dateFolderPaths:
         dataPaths = directory.getChildrenPaths(dateFolderPath)
         dataPaths = sanitizeDataFolders(dataPaths)
@@ -35,11 +41,17 @@ def main():
             bxh.analyzeSlices(analysisPath, slice_range)
             qa_csv.save_local_summary(analysisPath, atrribute_list, config.LOCAL_SUMMARY_FILE)
 
+    file_paths = directory.getFilePaths(rootDir, ".gz")
+    for filePath in file_paths:
+        directory.decompress(filePath)
     qa_csv.save_global_summary(rootDir, atrribute_list, config.GLOBAL_SUMMARY_FILE)
 
     data = qa_csv.read_csv(directory.joinPath([rootDir, config.GLOBAL_SUMMARY_FILE]))
     plot_data.plot_QA(data, config.PLOTS)
-    directory.compress(rootDir)
+
+    folderPaths = directory.getChildrenPaths(rootDir)
+    for folderPath in folderPaths:
+        directory.compress(folderPath)
 
     # finish and has the runtime log
     rl.info(config.RUNTIME_STOP)
@@ -52,8 +64,8 @@ def sanitizeDataFolders(pathList):
             pathList.pop(idx)
             continue
         # This is to save space on HD, surplus like localizers should be removed
-        if directory.getNameFromPath(path) != 'FBIRN_EPI':
-            if directory.getNameFromPath(path) != 'ANALYSIS':
+        if directory.getNameFromPath(path) != config.DATA_SERIESDESCRIPTION:
+            if directory.getNameFromPath(path) != bxh.ANALYSIS_FOLDER:
                 shutil.rmtree(path)
             pathList.pop(idx)
             continue
