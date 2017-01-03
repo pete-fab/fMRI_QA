@@ -70,10 +70,8 @@ class RawData(object):
                 sub_paths = d.getChildrenPaths(d.joinPath([self.__s_path, date_string]))
                 for sp in sub_paths:
                     if self.__verify_is_contains_QA(sp):
-                        dest = d.joinPath([self.__l_path, date_string])
+                        dest = d.joinPath([self.__l_path, date_string, config.DATA_SERIESDESCRIPTION])
                         d.copy_folder_contents(sp, dest)
-            else:
-                break
 
     def __verify_is_contains_QA(self, directory_path):
 
@@ -89,9 +87,9 @@ class RawData(object):
                 and "ReferringPhysicianName" in d_info):
             return False
 
-        if not (d_info.RequestingPhysician == "fMRI"
-                and d_info.SeriesDescription == "fBIRN_epi"
-                and d_info.ReferringPhysicianName == "QA"):
+        if not (d_info.RequestingPhysician == config.DATA_REQUESTINGPHYSICIAN
+                and d_info.SeriesDescription == config.DATA_SERIESDESCRIPTION
+                and d_info.ReferringPhysicianName == config.DATA_REFERRINGPHYSICIANNAME):
             return False
 
         return True

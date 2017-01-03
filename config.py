@@ -3,16 +3,20 @@ PACS_DIR = '/home/brain/Documents/test_DICOM_storage/'
 DICOMSERVER_DIR = PACS_DIR
 DICOMSERVER_AET = 'PYNETDICOM'
 DICOMSERVER_PORT = 9999
+DATA_REQUESTINGPHYSICIAN = "fMRI"
+DATA_SERIESDESCRIPTION = "fBIRN_epi"
+DATA_REFERRINGPHYSICIANNAME = "QA"
+DATA_EXT = "dcm"
 SLICE_RANGE = xrange(3, 30, 3)
-# ATTRIBUTE_LIST = ['percentFluc', 'drift', 'driftfit',
-#                   'mean', 'SNR', 'SFNR',
-#                   'rdc',
-#                   'minFWHMX', 'meanFWHMX', 'maxFWHMX',
-#                   'minFWHMY', 'meanFWHMY', 'maxFWHMY',
-#                   'minFWHMZ', 'meanFWHMZ', 'maxFWHMZ',
-#                   'dispCMassX', 'driftCMassX', 'dispCMassY',
-#                   'driftCMassY', 'dispCMassZ', 'driftCMassZ',
-#                   'meanGhost', 'meanBrightGhost']
+ATTRIBUTE_LIST = ['percentFluc', 'drift', 'driftfit',
+                  'mean', 'SNR', 'SFNR',
+                  'rdc',
+                  'minFWHMX', 'meanFWHMX', 'maxFWHMX',
+                  'minFWHMY', 'meanFWHMY', 'maxFWHMY',
+                  'minFWHMZ', 'meanFWHMZ', 'maxFWHMZ',
+                  'dispCMassX', 'driftCMassX', 'dispCMassY',
+                  'driftCMassY', 'dispCMassZ', 'driftCMassZ',
+                  'meanGhost', 'meanBrightGhost']
 ALL_LOG = 'all.log'
 RUNTIME_LOG = '.runtime.rlog'
 RUNTIME_START = 'qa_script_start'
