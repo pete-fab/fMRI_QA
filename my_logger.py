@@ -5,7 +5,7 @@ import inspect
 import logging
 import config
 import directory
-from time import gmtime, strftime
+from time import strftime, localtime
 
 
 class Singleton(type):
@@ -125,7 +125,7 @@ class RuntimeLogger(GeneralLogger):
     def __init__(self):
         GeneralLogger.__init__(self)
         self.__l_path = directory.joinPath([self.get_log_dir(),
-                                            "." + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + config.RUNTIME_LOG
+                                            "." + strftime("%Y-%m-%d_%H-%M-%S", localtime()) + config.RUNTIME_LOG
                                             ])
         print "Runtime logger path " + self.__l_path
         self.__myhandler = logging.FileHandler(self.__l_path, mode='a', encoding=None, delay=False)
