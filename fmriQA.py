@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import shutil
 import sys
-
+import dicom
 import bxh
 import config
 import directory
@@ -73,6 +73,29 @@ def sanitizeDataFolders(pathList):
             print path + " contains non DICOM files!!"
             raise TypeError
     return pathList
+
+
+def verify_is_QA_DICOM(file_path):
+    if not directory.isDICOM(file_path):
+        return False
+
+    dicom_info = dicom.read_file(file_path)
+    return is_dicom_dict_QA(dicom_info)
+
+
+def is_dicom_dict_QA(dicom_info):
+    # check if this is QA fMRI series
+    if not ("RequestingPhysician" in dicom_info
+            and "SeriesDescription" in dicom_info
+            and "ReferringPhysicianName" in dicom_info):
+        return False
+
+    if not (dicom_info.RequestingPhysician == config.DATA_REQUESTINGPHYSICIAN
+            and dicom_info.SeriesDescription == config.DATA_SERIESDESCRIPTION
+            and dicom_info.ReferringPhysicianName == config.DATA_REFERRINGPHYSICIANNAME):
+        return False
+
+    return True
 
 
 if __name__ == "__main__":

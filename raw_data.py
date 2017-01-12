@@ -6,6 +6,7 @@ import my_logger as l
 import directory as d
 import datetime as dt
 import dicom
+import fmriQA
 
 
 la = l.AllLogger()
@@ -69,31 +70,12 @@ class RawData(object):
                 date_string = "{:%Y%m%d}".format(date_time)
                 sub_paths = d.getChildrenPaths(d.joinPath([self.__s_path, date_string]))
                 for sp in sub_paths:
-                    if self.__verify_is_contains_QA(sp):
-                        dest = d.joinPath([self.__l_path, date_string, config.DATA_SERIESDESCRIPTION])
-                        d.copy_folder_contents(sp, dest)
-
-    def __verify_is_contains_QA(self, directory_path):
-
-        file = d.getOneFilePath(directory_path)
-        # In this directory there should be only DICOMs - so first file is good as any
-        if not d.isDICOM(file):
-            return False
-
-        d_info = dicom.read_file(file)
-        # check if this is QA fMRI series
-        if not ("RequestingPhysician" in d_info
-                and "SeriesDescription" in d_info
-                and "ReferringPhysicianName" in d_info):
-            return False
-
-        if not (d_info.RequestingPhysician == config.DATA_REQUESTINGPHYSICIAN
-                and d_info.SeriesDescription == config.DATA_SERIESDESCRIPTION
-                and d_info.ReferringPhysicianName == config.DATA_REFERRINGPHYSICIANNAME):
-            return False
-
-        return True
-
+                    if d.isContentsDICOM(sp):
+                        # In this directory there should be only DICOMs - so first file is good as any
+                        file_path = d.getOneFilePath(sp)
+                        if fmriQA.verify_is_QA_DICOM(file_path):
+                            dest = d.joinPath([self.__l_path, date_string, config.DATA_SERIESDESCRIPTION])
+                            d.copy_folder_contents(sp, dest)
 
 
     def __validate_summary_path(self, summary_path):
