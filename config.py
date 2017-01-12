@@ -1,4 +1,10 @@
 DATA_DIR = '/media/sf_MAGAZYN/Data/QA/QA_fMRI_data/'
+SUBDIRS = { 'PROCESSED_DATA': 'processed',
+            'UNPROCESSED_DATA': 'unprocessed',
+            'LOCAL_SUMMARIES': 'local_summaries',
+            'LOCAL_XMLS': 'local_xmls'
+            }
+
 PACS_DIR = '/home/brain/Documents/test_DICOM_storage/'
 DICOMSERVER_DIR = PACS_DIR
 DICOMSERVER_AET = 'PYNETDICOM'
@@ -30,8 +36,9 @@ DEBUG_DIR = '/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/'
 SLICE_RANGE_DEBUG = xrange(15, 18, 5)
 ATTRIBUTE_LIST_DEBUG = ['percentFluc', 'drift', 'SNR', 'SFNR']
 
-GLOBAL_SUMMARY_FILE = 'global_summary.csv'
-LOCAL_SUMMARY_FILE = 'local_summary.csv'
+SUMMARY_EXT = '.csv'
+GLOBAL_SUMMARY_FILE = 'global_summary' + SUMMARY_EXT
+LOCAL_SUMMARY_FILE = 'local_summary' + SUMMARY_EXT
 
 PLOTS = { 1: {
               'attributes': ['percentFluc', 'drift', 'driftfit'],

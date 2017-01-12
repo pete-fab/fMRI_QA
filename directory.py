@@ -141,9 +141,10 @@ def isContentsDICOM(pathDir):
     return ret
 
 
-def compress(dir_path):
+def compress(dir_path, archive_path = ""):
     dir_path = sanitizePath(dir_path)
-    archive_path = dir_path + ARCHIVE_EXTENSION
+    if archive_path == "":
+        archive_path = dir_path + ARCHIVE_EXTENSION
     try:
         tar = tarfile.open(archive_path, "w:gz")
         tar.add(dir_path, getNameFromPath(dir_path))  # second argument required to add relative paths into tar

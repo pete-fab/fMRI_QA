@@ -136,5 +136,5 @@ def plot_QA(data, plots):
             figure = go.Figure(data=plot_data, layout=go.Layout(layout))
 
         auto_open = False #do not open the web browser upon saving
-        file_path = directory.joinPath(['graphs', 'QA_results' + str(plot_id) + '.html'])
+        file_path = directory.joinPath([directory.getFileDirectory(__file__),'graphs', 'QA_results' + str(plot_id) + '.html'])
         plotly.offline.plot(figure, filename=file_path, show_link=False, auto_open=auto_open)

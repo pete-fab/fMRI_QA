@@ -54,6 +54,13 @@ def __read_analysis_xml(filePath, attributeList):
         raise ValueError('the XML structure is not valid')
 
     data = []
+    #Add scandate
+    temp = __get_attribute_value(stats, "scandate").split('-')
+    data.append("".join(temp))
+    # Add slice number
+    data.append(__get_attribute_value(stats, "slice"))
+    # Add file directory
+    data.append(directory.getFileDirectory(__get_attribute_value(stats,"diffimagefile")))
     for i, val in enumerate(attributeList):
         data.append(__get_attribute_value(stats, val))
 
@@ -69,37 +76,59 @@ def __add_series_attributes(attributeList):
 
 
 def __get_data_list(workingDir, attributeList):
-    pathList = directory.getChildrenPaths(workingDir)
+    pathList = directory.getFilePaths(workingDir,'.xml')
     dataList = []
 
     for i, currentPath in enumerate(pathList):
-        data = __read_analysis_xml(directory.joinPath([currentPath, 'summaryQA.xml']), attributeList)
-        data.insert(0, currentPath)
-        sliceIndex = directory.getNameFromPath(currentPath).replace(bxh.SLICE_ROOT, '')
-        data.insert(0, sliceIndex)
-        data.insert(0, directory.getNameFromPath(workingDir,-2))
+        data = __read_analysis_xml(currentPath, attributeList)
+        # data.insert(0, currentPath)
+
+        # data = __read_analysis_xml(currentPath, attributeList)
+        # data.insert(0, currentPath)
+        # sliceIndex = directory.getNameFromPath(currentPath).replace(bxh.SLICE_ROOT, '')
+        # parts = sliceIndex.split('_')
+        # data.insert(0, parts[1])
+        # data.insert(0, parts[0])
         dataList.append(data)
 
     return dataList
 
+def __copy_xmls(workingDir, destinationDir):
+    pathList = directory.getChildrenPaths(workingDir)
+    dataList = []
 
-def save_local_summary(workingDir, attributeList, local_summary_file):
-    finalAttributeList = __add_series_attributes(attributeList)
-    dataList = __get_data_list(workingDir, attributeList)
-    save_csv(directory.joinPath([workingDir, local_summary_file]), dataList, finalAttributeList)
+    for i, currentPath in enumerate(pathList):
+        filePath = directory.joinPath([currentPath, 'summaryQA.xml'])
+        sliceIndex = directory.getNameFromPath(currentPath).replace(bxh.SLICE_ROOT, '')
+        date = directory.getNameFromPath(workingDir, -2)
+        copied_xml_path = directory.joinPath([destinationDir,date+'_'+sliceIndex+'.xml'])
+        directory.copy_file(filePath, copied_xml_path)
+        hashfile.save(copied_xml_path)
 
 
-def save_global_summary(workingDir, attributeList, file_name):
+def save_local_summary(workingDir, attributeList, local_summary_file_path, copy_local_summary_path, copy_xml_folder_path):
     finalAttributeList = __add_series_attributes(attributeList)
     pathList = directory.getChildrenPaths(workingDir)
     dataList = []
 
-    # assuming path structure workingDIR/QAdata/bxh.ANALYSIS_FOLDER
-    for currentPath in pathList:
-        data = __get_data_list(directory.joinPath([currentPath, bxh.ANALYSIS_FOLDER]), attributeList)
+    for i, currentPath in enumerate(pathList):
+        data = __get_data_list(currentPath, attributeList)
         dataList.extend(data)
 
-    save_csv(directory.joinPath([workingDir, file_name]), dataList, finalAttributeList)
+    save_csv(local_summary_file_path, dataList, finalAttributeList)
+    directory.copy_file(local_summary_file_path, copy_local_summary_path)
+    hashfile.save(copy_local_summary_path)
+    __copy_xmls(workingDir, copy_xml_folder_path)
+
+
+def save_global_summary(workingDir, attributeList, file_path):
+    finalAttributeList = __add_series_attributes(attributeList)
+
+    # assuming path structure local_summaries/*.xml
+    data = __get_data_list(workingDir, attributeList)
+
+
+    save_csv(file_path, data, finalAttributeList)
 
 
 def read_csv(file_path):

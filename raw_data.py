@@ -13,7 +13,12 @@ la = l.AllLogger()
 
 
 class RawData(object):
-    def __init__(self, local_path, server_path, summary_file_path, attribute_list):
+    def __init__(self, local_root_path, processed_path, unprocessed_path, xml_path, server_path, summary_file_path, attribute_list):
+
+        local_path = local_root_path
+        self.__p_path = processed_path
+        self.__up_path = unprocessed_path
+        self.__xml_path = xml_path
         if not d.isDir(local_path):
             la.exception("Local_path is not existing directory: " + local_path)
             raise OSError(local_path)
@@ -74,7 +79,7 @@ class RawData(object):
                         # In this directory there should be only DICOMs - so first file is good as any
                         file_path = d.getOneFilePath(sp)
                         if fmriQA.verify_is_QA_DICOM(file_path):
-                            dest = d.joinPath([self.__l_path, date_string, config.DATA_SERIESDESCRIPTION])
+                            dest = d.joinPath([self.__up_path, date_string, config.DATA_SERIESDESCRIPTION])
                             d.copy_folder_contents(sp, dest)
 
 
@@ -125,7 +130,7 @@ class RawData(object):
     #             la.warning("There exists rlog with modified hashfile: " + r_log)
 
     def __get_dates_from_local_archives(self):
-        file_paths = d.getFilePaths(self.__l_path, ".gz")
+        file_paths = d.getFilePaths(self.__p_path, ".gz")
         file_paths = sorted(file_paths)
         for f in file_paths:
             if hashfile.verify(f):
@@ -145,25 +150,16 @@ class RawData(object):
 
     def __fix_summary_from_local_archives(self):
         if self.__is_archive_files_valid:
-            file_paths = d.getFilePaths(self.__l_path, ".gz")
+            file_paths = d.getFilePaths(self.__xml_path, ".xml")
             file_paths = sorted(file_paths)
-            # unzip all
             for f in file_paths:
-                if hashfile.verify(f):
-                    d.decompress(f)
-                else:
-                    la.error("This file was verifired a moment ago and there is hash mismatch already: " + f)
-                    raise OSError(f)
+                if not hashfile.verify(f):
+                    d.delete(f)
             # create global summary based on trusted local summaries
-            qa_csv.save_global_summary(self.__l_path, self.__attrib_list,
-                                       d.getFileName(self.__summary_path_unvalidated))
+            qa_csv.save_global_summary(self.__xml_path, self.__attrib_list,
+                                       d.joinPath([self.__l_path, d.getFileName(self.__summary_path_unvalidated)]) )
             la.info("Global summary remade from archive files")
             self.__is_summary_valid = True
-
-            # zip the folders
-            dir_paths = d.getChildrenPaths(self.__l_path)
-            for dp in dir_paths:
-                d.compress(dp)
 
             return True
         else:
