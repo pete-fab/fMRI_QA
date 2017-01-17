@@ -137,28 +137,28 @@ class RuntimeLogger(GeneralLogger):
         self._my_child.addHandler(self.__myhandler)  # set child handler
 
 
-class AllLogger(GeneralLogger):
-    def __init__(self):
-        GeneralLogger.__init__(self)
-        self.__l_path = directory.joinPath([self.get_log_dir(), config.ALL_LOG])
-        print "Alllogger path " + self.__l_path
-        self.__myhandler = logging.FileHandler(self.__l_path, mode='a', encoding=None, delay=False)
-        self.__myhandler.setLevel(logging.DEBUG)
-        self.__myhandler.setFormatter(self.get_formatter())
-        self._my_child = self.getChild('AllLogger')
-        self._my_child.parent.setLevel(logging.DEBUG)  # This is a hack.
-        # Otherwise it is set to logging.WARNING and info and debug are not logged. Because child cannot log more than a parent
-        self._my_child.addHandler(self.__myhandler)  # set child handler
+# class AllLogger(GeneralLogger):
+#     def __init__(self):
+#         GeneralLogger.__init__(self)
+#         self.__l_path = directory.joinPath([self.get_log_dir(), config.ALL_LOG])
+#         print "Alllogger path " + self.__l_path
+#         self.__myhandler = logging.FileHandler(self.__l_path, mode='a', encoding=None, delay=False)
+#         self.__myhandler.setLevel(logging.DEBUG)
+#         self.__myhandler.setFormatter(self.get_formatter())
+#         self._my_child = self.getChild('AllLogger')
+#         self._my_child.parent.setLevel(logging.DEBUG)  # This is a hack.
+#         # Otherwise it is set to logging.WARNING and info and debug are not logged. Because child cannot log more than a parent
+#         self._my_child.addHandler(self.__myhandler)  # set child handler
 
 
 if __name__ == "__main__":
     # example usage:
-    a = AllLogger()
-    a.critical("test critical message")
+    # a = AllLogger()
+    # a.critical("test critical message")
 
     r = RuntimeLogger()
     r.critical("runtime critical")
-    a.critical("2nd critical")
+    # a.critical("2nd critical")
 
     # expected output:
     # RuntimeLogger file contains formatted:

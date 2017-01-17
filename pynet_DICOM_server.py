@@ -11,7 +11,6 @@ import logging
 from time import sleep
 
 
-al = l.AllLogger()
 rl = l.RuntimeLogger()
 
 
