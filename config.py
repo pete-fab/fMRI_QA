@@ -31,7 +31,7 @@ RUNTIME_STOP = 'qa_script_stop'
 IS_SAVE_ANALYSIS_FILES = True
 IS_SAVE_ORIGINAL_FILES = True
 
-IS_DEBUG = True
+IS_DEBUG = False
 DEBUG_DIR = '/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/'
 SLICE_RANGE_DEBUG = xrange(15, 18, 5)
 ATTRIBUTE_LIST_DEBUG = ['percentFluc', 'drift', 'SNR', 'SFNR']

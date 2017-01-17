@@ -13,7 +13,6 @@ import raw_data
 
 
 def main():
-    al = l.AllLogger()
     rl = l.RuntimeLogger()
     rl.info(config.RUNTIME_START)
     if config.IS_DEBUG:
@@ -26,11 +25,15 @@ def main():
         atrribute_list = config.ATTRIBUTE_LIST
     pacsDir = config.PACS_DIR
     unprocessed_data_path = directory.joinPath([rootDir, config.SUBDIRS['UNPROCESSED_DATA']])
+    directory.createPath(unprocessed_data_path)
     processed_data_path = directory.joinPath([rootDir, config.SUBDIRS['PROCESSED_DATA']])
-    local_summary_path = directory.joinPath([rootDir, config.SUBDIRS['LOCAL_SUMMARIES']])
+    directory.createPath(processed_data_path)
+    local_summaries_path = directory.joinPath([rootDir, config.SUBDIRS['LOCAL_SUMMARIES']])
+    directory.createPath(local_summaries_path)
     xml_path = directory.joinPath([rootDir, config.SUBDIRS['LOCAL_XMLS']])
+    directory.createPath(xml_path)
 
-    raw_data.RawData(rootDir, processed_data_path, unprocessed_data_path, xml_path, pacsDir,
+    raw_data.RawData(rootDir, processed_data_path, unprocessed_data_path, xml_path, local_summaries_path, pacsDir,
                      directory.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]), atrribute_list)
 
     dateFolderPaths = directory.getChildrenPaths(unprocessed_data_path)
@@ -45,7 +48,7 @@ def main():
             bxh.wrapEPIdata(dataPath, analysisPath)
             bxh.analyzeSlices(analysisPath, slice_range)
             loc_summary_path = directory.joinPath([ analysisPath, config.LOCAL_SUMMARY_FILE ])
-            copy_loc_summary = directory.joinPath([local_summary_path, date + config.SUMMARY_EXT])
+            copy_loc_summary = directory.joinPath([local_summaries_path, date + config.SUMMARY_EXT])
             qa_csv.save_local_summary(analysisPath, atrribute_list, loc_summary_path, copy_loc_summary, xml_path )
         directory.compress(dateFolderPath, directory.joinPath([processed_data_path,date+directory.ARCHIVE_EXTENSION]))
 
@@ -54,10 +57,6 @@ def main():
 
     data = qa_csv.read_csv(directory.joinPath([rootDir, config.GLOBAL_SUMMARY_FILE]))
     plot_data.plot_QA(data, config.PLOTS)
-
-    # folderPaths = directory.getChildrenPaths(rootDir)
-    # for folderPath in folderPaths:
-    #     directory.compress(folderPath)
 
     # finish and has the runtime log
     rl.info(config.RUNTIME_STOP)

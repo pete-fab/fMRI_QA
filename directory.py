@@ -42,12 +42,12 @@ def delete(pathDir):
         shutil.rmtree(pathDir)
         return True
     else:
-        raise "path or file ("+ pathDir +") given to delete is not existent"
+        print pathDir
+        raise "path or file ( " + pathDir + ") given to delete is not existent"
 
 
 def isDir(pathDir):
     return os.path.isdir(pathDir)
-
 
 def isFile(path):
     return os.path.isfile(path)
@@ -72,15 +72,26 @@ def getFileNames(path_dir, ext=""):
     if ext == "":
         return [x[2] for x in os.walk(path_dir)][0]
     else:
+        ext = __validate_extenstion(ext)
         # path_paths = getFilePaths(path_dir)
         files = [x[2] for x in os.walk(path_dir)][0]
         return filter(lambda x: getExtenstion(x) == ext, files)
+
+def __validate_extenstion(ext):
+    if ext.count(".") >= 1:
+        temp = ext.split(".")
+        ext = temp[-1]
+    elif ext.count(".") == 0:
+        ext = "." + ext
+
+    return ext
 
 
 def getOneFilePath(path_dir, ext=""):
     if ext == "":
         first_file = next(joinPath([path_dir, f]) for f in os.listdir(path_dir) if isFile(joinPath([path_dir, f])))
     else:
+        ext = __validate_extenstion(ext)
         first_file = next((joinPath([path_dir, f]) for f in os.listdir(path_dir) if
                            getExtenstion(f) == ext and isFile(joinPath([path_dir, f]))), "Error")
 
@@ -92,6 +103,7 @@ def getExtenstion(file_path):
 
 
 def getFilePaths(pathDir, ext=""):
+    ext = __validate_extenstion(ext)
     list = getFileNames(pathDir, ext)
     paths = []
     for child in list:
