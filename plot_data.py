@@ -7,11 +7,47 @@ def plot_QA(data, plots):
     time_points = []
     for seriesDate in data['seriesIndex']:
         time_points.append(seriesDate[:4] + '-' + seriesDate[4:6] + '-' + seriesDate[6:8])
+
+
+    averaged_data = {}
+    for data_type in data:
+        temp_data = {}
+        same_date_point = {}
+        for i in range(0, len (time_points)):
+            if time_points[i] in temp_data:
+                try:
+                    if data_type == 'sliceIndex':
+                        raise ValueError
+                    temp_data[time_points[i]] = temp_data[time_points[i]] + float(data[data_type][i])
+                except ValueError:
+                    temp_data[time_points[i]] = temp_data[time_points[i]] + ";" + data[data_type][i]
+                same_date_point[time_points[i]] = same_date_point[time_points[i]] + 1
+            else:
+                try:
+                    if data_type == 'sliceIndex':
+                        raise ValueError
+                    temp_data[time_points[i]] = float(data[data_type][i])
+                except ValueError:
+                    temp_data[time_points[i]] = data[data_type][i]
+                same_date_point[time_points[i]] = 1
+
+        temp_average_data_type = []
+        for key in temp_data:
+            try:
+                temp_average_data_type.append(temp_data[key]/same_date_point[key])
+            except TypeError:
+                temp_average_data_type.append(temp_data[key] )
+        averaged_data[data_type] = temp_average_data_type
+
+    data = averaged_data
+    time_points = []
+    for key in same_date_point:
+        time_points.append(key)
+
     time_points_sorted = sorted(time_points)
     time_point_sorted_idxs = sorted(range(len(time_points)), key=lambda k: time_points[k])
     time_points_rev = time_points_sorted[::-1]  # time points reversed
-    range_colors = {'FWHMX': 'rgba(25,87,194,0.6)','FWHMZ': 'rgba(10,160,55,0.6)','FWHMY': 'rgba(235,195,21,0.6)'}
-
+    range_colors = {'FWHMX': 'rgba(25,87,194,0.6)', 'FWHMZ': 'rgba(10,160,55,0.6)', 'FWHMY': 'rgba(235,195,21,0.6)'}
     for plot_id in plots:
         plot_data = []
 

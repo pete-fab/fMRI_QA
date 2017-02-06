@@ -13,7 +13,7 @@ DATA_REQUESTINGPHYSICIAN = "fMRI"
 DATA_SERIESDESCRIPTION = "fBIRN_epi"
 DATA_REFERRINGPHYSICIANNAME = "QA"
 DATA_EXT = "dcm"
-SLICE_RANGE = xrange(3, 30, 3)
+SLICE_RANGE = xrange(9, 22, 3)  # {9, 12, 15, 18, 21}
 ATTRIBUTE_LIST = ['percentFluc', 'drift', 'driftfit',
                   'mean', 'SNR', 'SFNR',
                   'rdc',
