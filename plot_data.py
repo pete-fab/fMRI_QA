@@ -2,13 +2,19 @@ import plotly
 import plotly.graph_objs as go
 from itertools import cycle
 import directory
+import my_logger as l
+
 
 def plot_QA(data, plots):
+    rl = l.RuntimeLogger()
+    rl.info("plot_QA start")
+
+    rl.info("plot_QA prepare data")
     time_points = []
     for seriesDate in data['seriesIndex']:
         time_points.append(seriesDate[:4] + '-' + seriesDate[4:6] + '-' + seriesDate[6:8])
 
-
+    rl.info("plot_QA calculate averages across slices")
     averaged_data = {}
     for data_type in data:
         temp_data = {}
@@ -44,6 +50,7 @@ def plot_QA(data, plots):
     for key in same_date_point:
         time_points.append(key)
 
+    rl.info("plot_QA prepare plots")
     time_points_sorted = sorted(time_points)
     time_point_sorted_idxs = sorted(range(len(time_points)), key=lambda k: time_points[k])
     time_points_rev = time_points_sorted[::-1]  # time points reversed
@@ -170,7 +177,9 @@ def plot_QA(data, plots):
                 ),
             )
             figure = go.Figure(data=plot_data, layout=go.Layout(layout))
+            rl.info("plot_QA " + plots[plot_id]['title'] + " done")
 
         auto_open = False #do not open the web browser upon saving
         file_path = directory.joinPath([directory.getFileDirectory(__file__),'graphs', 'QA_results' + str(plot_id) + '.html'])
         plotly.offline.plot(figure, filename=file_path, show_link=False, auto_open=auto_open)
+        rl.info("plot_QA end; files generated")

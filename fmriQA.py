@@ -16,10 +16,12 @@ def main():
     rl = l.RuntimeLogger()
     rl.info(config.RUNTIME_START)
     if config.IS_DEBUG:
+        rl.info("running in debug mode")
         slice_range = config.SLICE_RANGE_DEBUG
         rootDir = directory.sanitizePath(config.DEBUG_DIR)
         atrribute_list = config.ATTRIBUTE_LIST
     else:
+        rl.info("running in normal mode")
         slice_range = config.SLICE_RANGE
         rootDir = directory.sanitizePath(config.DATA_DIR)
         atrribute_list = config.ATTRIBUTE_LIST
