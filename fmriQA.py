@@ -10,10 +10,11 @@ import my_logger as l
 import plot_data
 import qa_csv
 import raw_data
+import argparse
 
+rl = l.RuntimeLogger()
 
-def main():
-    rl = l.RuntimeLogger()
+def auto():
     rl.info(config.RUNTIME_START)
     if config.IS_DEBUG:
         rl.info("running in debug mode")
@@ -104,6 +105,44 @@ def is_dicom_dict_QA(dicom_info):
 
     return True
 
+def manual():
+    dataPath = ''
+    analysisPath = ''
+    slice_range = ''
+    local_summary_file = ''
+    local_summaries_path = ''
+    atrribute_list = ''
+    xml_path = ''
+    
+    bxh.wrapEPIdata(dataPath, analysisPath)
+    bxh.analyzeSlices(analysisPath, slice_range)
+    loc_summary_path = directory.joinPath([analysisPath, config.LOCAL_SUMMARY_FILE])
+    copy_loc_summary = directory.joinPath([local_summaries_path, date + config.SUMMARY_EXT])
+    qa_csv.save_local_summary(analysisPath, atrribute_list, loc_summary_path, copy_loc_summary, xml_path)
+
 
 if __name__ == "__main__":
-    main()
+    # parse commandline
+    parser = argparse.ArgumentParser(description='This is program executes QA for fMRI',
+                                     prog='QA for fMRI at MCB, UJ',
+                                     usage='python fmriQA.py -mode ')
+    parser.add_argument('-mode', help='Choose "manual" or "auto" mode',
+                        default='manual')
+    args = parser.parse_args()
+
+    if not (args.mode == 'manual' or args.mode == 'auto'):
+        message = 'The allowed modes are: "manual" and "auto". The mode used was: ' + args.mode
+        rl.error(message)
+        raise ValueError(message)
+
+    if args.mode == 'auto':
+        message = "The implementation has not been completed"
+        print message
+        rl.info(message)
+        sys.exit(0)
+
+    if args.mode == 'auto':
+        auto()
+
+    if args.mode == 'manual':
+        manual()
