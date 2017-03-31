@@ -5,6 +5,7 @@ import inspect
 import logging
 import config
 import directory
+import os
 from time import strftime, localtime
 
 
@@ -20,11 +21,9 @@ class Singleton(type):
 class GeneralLogger(logging.Logger):
     __metaclass__ = Singleton
 
-    def __init__(self):
+    def __init__(self, log_directory=os.path.dirname(os.path.realpath(__file__))):
         if config.IS_DEBUG:
             log_directory = config.DEBUG_DIR
-        else:
-            log_directory = config.DATA_DIR
         log_directory = directory.sanitizePath(log_directory)
         if not directory.isDir(log_directory):
             print "Directory to save logs does not exist"

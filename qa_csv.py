@@ -120,6 +120,17 @@ def save_local_summary(workingDir, attributeList, local_summary_file_path, copy_
     hashfile.save(copy_local_summary_path)
     __copy_xmls(workingDir, copy_xml_folder_path)
 
+def save_local_summary_only(workingDir, attributeList, local_summary_file_path):
+    finalAttributeList = __add_series_attributes(attributeList)
+    pathList = directory.getChildrenPaths(workingDir)
+    dataList = []
+
+    for i, currentPath in enumerate(pathList):
+        data = __get_data_list(currentPath, attributeList)
+        dataList.extend(data)
+
+    save_csv(local_summary_file_path, dataList, finalAttributeList)
+
 
 def save_global_summary(workingDir, attributeList, file_path):
     finalAttributeList = __add_series_attributes(attributeList)

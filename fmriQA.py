@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+
+# Author: Piotr Faba, github: pete-fab
+# Most recent version available at: https://github.com/pete-fab/fMRI_QA
 import shutil
-import sys
 import dicom
 import bxh
 import config
@@ -12,7 +14,9 @@ import qa_csv
 import raw_data
 import argparse
 
+# definition of logger singleton
 rl = l.RuntimeLogger()
+
 
 def auto():
     rl.info(config.RUNTIME_START)
@@ -105,29 +109,30 @@ def is_dicom_dict_QA(dicom_info):
 
     return True
 
-def manual():
-    dataPath = ''
-    analysisPath = ''
-    slice_range = ''
-    local_summary_file = ''
-    local_summaries_path = ''
-    atrribute_list = ''
-    xml_path = ''
-    
+def manual(dataPath, analysisPath, slice_range):
+    atrribute_list = config.ATTRIBUTE_LIST
+
     bxh.wrapEPIdata(dataPath, analysisPath)
     bxh.analyzeSlices(analysisPath, slice_range)
     loc_summary_path = directory.joinPath([analysisPath, config.LOCAL_SUMMARY_FILE])
-    copy_loc_summary = directory.joinPath([local_summaries_path, date + config.SUMMARY_EXT])
-    qa_csv.save_local_summary(analysisPath, atrribute_list, loc_summary_path, copy_loc_summary, xml_path)
+    qa_csv.save_local_summary_only(analysisPath, atrribute_list, loc_summary_path)
 
 
 if __name__ == "__main__":
     # parse commandline
     parser = argparse.ArgumentParser(description='This is program executes QA for fMRI',
                                      prog='QA for fMRI at MCB, UJ',
-                                     usage='python fmriQA.py -mode ')
-    parser.add_argument('-mode', help='Choose "manual" or "auto" mode',
-                        default='manual')
+                                     usage='python fmriQA.py -mode ',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-mode', help='Choose "manual" or "auto" mode', default='manual')
+    parser.add_argument('-input', help='Path to folder with single set of EPI data', default=config.SUBDIRS['UNPROCESSED_DATA'])
+    parser.add_argument('-output', help='Output path', default=config.SUBDIRS['PROCESSED_DATA'])
+
+    slice_list = ""
+    for slice in config.SLICE_RANGE:
+        slice_list += str(slice) + ", "
+    slice_list = slice_list[0:-2] #remove surplus coma
+    parser.add_argument('-slices', help='Slices of measurement to be analysed', default=slice_list)
     args = parser.parse_args()
 
     if not (args.mode == 'manual' or args.mode == 'auto'):
@@ -136,13 +141,18 @@ if __name__ == "__main__":
         raise ValueError(message)
 
     if args.mode == 'auto':
-        message = "The implementation has not been completed"
+        message = 'Mode "auto" is not implemented fully. The program will terminate now.'
+        rl.warning(message)
         print message
-        rl.info(message)
-        sys.exit(0)
-
-    if args.mode == 'auto':
+        raise FutureWarning(message)
         auto()
 
+
     if args.mode == 'manual':
-        manual()
+        try:
+            slice_list = map(int, args.slices.split(","))
+        except:
+            message = 'There is an error in the slice list: ' + args.slices
+            rl.error(message)
+            raise ValueError(message)
+        manual(args.input, args.output, args.slices)
