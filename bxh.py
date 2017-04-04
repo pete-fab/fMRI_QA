@@ -17,7 +17,8 @@ def wrapEPIdata(dataDir,outputDir):
     dataFolder = directory.getNameFromPath(dataDir)
     rl.info(dataDir)
     # The relative output path is used to get absolute paths in the output
-    command = 'dicom2bxh --xcede *.'+config.DATA_EXT+' ..'+ directory.SEP + dataFolder + directory.SEP + WRAP_NAME
+    command = 'dicom2bxh --xcede * ..'+ directory.SEP + dataFolder + directory.SEP + WRAP_NAME
+    # command = 'dicom2bxh --xcede *.' + config.DATA_EXT + ' ..' + directory.SEP + dataFolder + directory.SEP + WRAP_NAME
     rl.info('To execute: '+command)
     p = subprocess.Popen(command, cwd=dataDir, shell=True)
     p.communicate()  # this causes the script to wait until dicom2bxh is finished

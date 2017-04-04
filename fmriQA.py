@@ -155,4 +155,4 @@ if __name__ == "__main__":
             message = 'There is an error in the slice list: ' + args.slices
             rl.error(message)
             raise ValueError(message)
-        manual(args.input, args.output, args.slices)
+        manual(args.input, args.output, slice_list)
