@@ -12,7 +12,11 @@ RUN wget https://www.nitrc.org/frs/download.php/10144/bxh_xcede_tools-1.11.14-ls
 
 ENV PATH="/bxh_xcede_tools-1.11.14-lsb30.x86_64/bin:${PATH}"
 
-COPY requirements.txt ./
+COPY requirements.txt /app/requirements.txt
 
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r /app/requirements.txt
+
+COPY ./* /app/
+
+ENTRYPOINT ["python", "/app/fmriQA.py"]
