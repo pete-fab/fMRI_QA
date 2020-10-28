@@ -19,4 +19,4 @@ RUN pip install --upgrade pip && \
 
 COPY ./* /app/
 
-ENTRYPOINT ["python", "/app/fmriQA.py"]
+ENTRYPOINT ["python", "-W"," ignore", "/app/fmriQA.py"]
