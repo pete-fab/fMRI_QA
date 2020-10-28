@@ -110,6 +110,7 @@ def is_dicom_dict_QA(dicom_info):
     return True
 
 def manual(dataPath, analysisPath, slice_range):
+    directory.createPath(analysisPath)
     atrribute_list = config.ATTRIBUTE_LIST
 
     bxh.wrapEPIdata(dataPath, analysisPath)
