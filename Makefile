@@ -2,6 +2,12 @@
 build: 
 	docker build -t neuromcb/fmri_qa .
 
+pull:
+	docker pull neuromcb/fmri_qa
+
+push:
+	docker push neuromcb/fmri_qa
+
 build_afni:
 	docker build -t neuromcb/afni images/afni/
 
