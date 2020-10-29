@@ -26,7 +26,7 @@ class GeneralLogger(logging.Logger):
             log_directory = config.DEBUG_DIR
         log_directory = directory.sanitizePath(log_directory)
         if not directory.isDir(log_directory):
-            print "Directory to save logs does not exist"
+            print "Directory to save logs does not exist: " + log_directory
             raise OSError(log_directory)
         logging.Logger.__init__(self, 'root')
         self.__log_dir = log_directory

@@ -5,8 +5,8 @@ SUBDIRS = { 'PROCESSED_DATA': 'processed',
             'LOCAL_XMLS': 'local_xmls'
             }
 
-PACS_DIR = '/home/brain/Documents/test_DICOM_storage/'
-DICOMSERVER_DIR = PACS_DIR
+SOURCE_DATA_DIR = '/data/debug/'
+DICOMSERVER_DIR = SOURCE_DATA_DIR
 DICOMSERVER_AET = 'PYNETDICOM'
 DICOMSERVER_PORT = 9999
 DATA_REQUESTINGPHYSICIAN = "fMRI"

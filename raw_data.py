@@ -13,7 +13,7 @@ logger = l.RuntimeLogger()
 
 
 class RawData(object):
-    def __init__(self, local_root_path, processed_path, unprocessed_path, xml_path, local_summaries_path, server_path,
+    def __init__(self, local_root_path, processed_path, unprocessed_path, xml_path, local_summaries_path, source_data_path,
                  summary_file_path, attribute_list):
 
         local_path = local_root_path
@@ -22,7 +22,7 @@ class RawData(object):
         self.__validate_dirs(unprocessed_path,"unprocessed_path")
         self.__validate_dirs(xml_path,"xml_path")
         self.__validate_dirs(local_path, "local_path")
-        self.__validate_dirs(server_path, "server_path")
+        self.__validate_dirs(source_data_path, "source_data_path")
         self.__validate_dirs(local_summaries_path, "local_summaries_path")
 
 
@@ -34,7 +34,7 @@ class RawData(object):
         self.__xml_path = xml_path
         self.__l_path = local_path
         self.__local_summaries_path = local_summaries_path
-        self.__s_path = server_path
+        self.__s_path = source_data_path
         self.__analysed_dates = set()
         self.__summary_path_unvalidated = summary_file_path
         self.__summary_path = ""
@@ -60,8 +60,8 @@ class RawData(object):
     def set_local_path(self, local_path):
         self.__l_path = local_path
 
-    def set_server_path(self, server_path):
-        self.__s_path = server_path
+    def set_source_data_path(self, source_data_path):
+        self.__s_path = source_data_path
 
     def __retrieve_local_sets(self):
         logger.debug("__retrieve_local_sets started")
@@ -223,7 +223,7 @@ if __name__ == "__main__":
     else:
         atrribute_list = config.ATTRIBUTE_LIST
     data = RawData(config.DEBUG_DIR,
-                   config.PACS_DIR,
+                   config.SOURCE_DATA_DIR,
                    d.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]),
                    atrribute_list
                    )

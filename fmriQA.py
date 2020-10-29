@@ -30,7 +30,7 @@ def auto():
         slice_range = config.SLICE_RANGE
         rootDir = directory.sanitizePath(config.DATA_DIR)
         atrribute_list = config.ATTRIBUTE_LIST
-    pacsDir = config.PACS_DIR
+    source_data_path = config.SOURCE_DATA_DIR
     unprocessed_data_path = directory.joinPath([rootDir, config.SUBDIRS['UNPROCESSED_DATA']])
     directory.createPath(unprocessed_data_path)
     processed_data_path = directory.joinPath([rootDir, config.SUBDIRS['PROCESSED_DATA']])
@@ -40,7 +40,7 @@ def auto():
     xml_path = directory.joinPath([rootDir, config.SUBDIRS['LOCAL_XMLS']])
     directory.createPath(xml_path)
 
-    raw_data.RawData(rootDir, processed_data_path, unprocessed_data_path, xml_path, local_summaries_path, pacsDir,
+    raw_data.RawData(rootDir, processed_data_path, unprocessed_data_path, xml_path, local_summaries_path, source_data_path,
                      directory.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]), atrribute_list)
 
     dateFolderPaths = directory.getChildrenPaths(unprocessed_data_path)
@@ -88,6 +88,9 @@ def sanitizeDataFolders(pathList):
 
 
 def verify_is_QA_DICOM(file_path):
+    if "DICOMDIR" == directory.getFileName(file_path):
+        return False
+
     if not directory.isDICOM(file_path):
         return False
 
