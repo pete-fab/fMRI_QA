@@ -64,6 +64,7 @@ def auto():
     qa_csv.save_global_summary(xml_path, atrribute_list, directory.joinPath([rootDir, config.GLOBAL_SUMMARY_FILE]) )
 
     data = qa_csv.read_csv(directory.joinPath([rootDir, config.GLOBAL_SUMMARY_FILE]))
+    rl.debug("data: " + str(data))
     plot_data.plot_QA(data, config.PLOTS)
 
     # finish and has the runtime log
@@ -146,10 +147,6 @@ if __name__ == "__main__":
         raise ValueError(message)
 
     if args.mode == 'auto':
-        message = 'Mode "auto" is not implemented fully. The program will terminate now.'
-        rl.warning(message)
-        print message
-        raise FutureWarning(message)
         auto()
 
 

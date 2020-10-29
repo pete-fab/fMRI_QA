@@ -151,13 +151,15 @@ def read_csv(file_path):
         csv_reader = csv.DictReader(csvfile, delimiter=',')
         isHeaderRow = True
         for row in csv_reader:
-            if isHeaderRow == False:
-                for i, val in enumerate(column_names):
-                    data[val].append(row[val])
-            else:
+            if isHeaderRow == True:
                 column_names = row
                 for i, val in enumerate(column_names):
-                    data[val] = [row[val]]
-                isHeaderRow = False
+                    data[val] = []
+            isHeaderRow = False
+            for i, val in enumerate(column_names):
+                try: # try casting to float
+                    data[val].append(float(row[val]))    
+                except ValueError:
+                    data[val].append(row[val])
     return data
 
