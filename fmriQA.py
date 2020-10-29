@@ -52,6 +52,7 @@ def auto():
         date = directory.getNameFromPath(dateFolderPath, -1)
         directory.createPath(analysisPath)
         for dataPath in dataPaths:
+            rl.debug("auto() dataPath: " + dataPath)
             bxh.wrapEPIdata(dataPath, analysisPath)
             bxh.analyzeSlices(analysisPath, slice_range)
             loc_summary_path = directory.joinPath([ analysisPath, config.LOCAL_SUMMARY_FILE ])
@@ -83,7 +84,7 @@ def sanitizeDataFolders(pathList):
             continue
         if not directory.isContentsDICOM(path):
             print path + " contains non DICOM files!!"
-            raise TypeError
+            raise TypeError(path + " contains non DICOM files!!")
     return pathList
 
 

@@ -89,7 +89,7 @@ def plot_QA(data, plots):
                 y=upper_bound_data + lower_bound_data[::-1],
                 fill='tozerox',
                 fillcolor=fillcolor,
-                line=go.Line(color='transparent'),
+                line=go.Line(),
                 showlegend=True,
                 name=data_name +" range",
                 hoveron="points+fills",
