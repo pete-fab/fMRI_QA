@@ -88,12 +88,15 @@ def __validate_extenstion(ext):
 
 
 def getOneFilePath(path_dir, ext=""):
-    if ext == "":
-        first_file = next(joinPath([path_dir, f]) for f in os.listdir(path_dir) if isFile(joinPath([path_dir, f])))
-    else:
-        ext = __validate_extenstion(ext)
-        first_file = next((joinPath([path_dir, f]) for f in os.listdir(path_dir) if
-                           getExtenstion(f) == ext and isFile(joinPath([path_dir, f]))), "Error")
+    try:
+        if ext == "":
+            first_file = next(joinPath([path_dir, f]) for f in os.listdir(path_dir) if isFile(joinPath([path_dir, f])))
+        else:
+            ext = __validate_extenstion(ext)
+            first_file = next((joinPath([path_dir, f]) for f in os.listdir(path_dir) if
+                            getExtenstion(f) == ext and isFile(joinPath([path_dir, f]))), "Error")
+    except:
+        return None
 
     return first_file
 
