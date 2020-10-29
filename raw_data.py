@@ -70,9 +70,9 @@ class RawData(object):
             logger.warning("remaking global summary!")
             self.__fix_summary_from_local_archives()
 
-        logger.info(str(self.__analysed_dates))
+        logger.info("__analysed_dates: " + str(self.__analysed_dates))
         self.__get_dates_from_local_archives()
-        logger.info(str(self.__analysed_dates))
+        logger.info("__analysed_dates: " + str(self.__analysed_dates))
         #Am i not doubling the functionality here?
         # if self.__is_summary_valid:
         #     self.__get_dates_from_summary()
@@ -91,9 +91,12 @@ class RawData(object):
             if(d.isDICOM(file_path) and fmriQA.verify_is_QA_DICOM(file_path)):
                 logger.debug("This is dicom: " + str(file_path))
                 dicom_info = dicom.read_file(file_path)
-                dest = d.joinPath([self.__up_path, dicom_info.StudyDate, config.DATA_SERIESDESCRIPTION])
-                logger.debug("dest: " + str(dest))
-                d.copy_folder_contents(dn, dest)                
+                date_time = dt.datetime(int(dicom_info.StudyDate[0:4]), int(dicom_info.StudyDate[4:6]), int(dicom_info.StudyDate[6:8]), 0, 0, 0)
+                if not self.__analysed_dates.issuperset(set([date_time])):
+                    self.__analysed_dates.add(date_time)
+                    dest = d.joinPath([self.__up_path, dicom_info.StudyDate, config.DATA_SERIESDESCRIPTION])
+                    logger.debug("dest: " + str(dest))
+                    d.copy_folder_contents(dn, dest)                
 
 
     def __validate_local_archives(self):
