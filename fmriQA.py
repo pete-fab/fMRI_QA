@@ -18,19 +18,19 @@ import argparse
 rl = l.RuntimeLogger()
 
 
-def auto(sourceDataPath, analysisPath, slice_range):
+def multi(sourceDataPath, outputPath, slice_range):
     rl.info(config.RUNTIME_START)
     atrribute_list = config.ATTRIBUTE_LIST
-    unprocessed_data_path = directory.joinPath([analysisPath, config.SUBDIRS['UNPROCESSED_DATA']])
+    unprocessed_data_path = directory.joinPath([outputPath, config.SUBDIRS['UNPROCESSED_DATA']])
     directory.createPath(unprocessed_data_path)
-    processed_data_path = directory.joinPath([analysisPath, config.SUBDIRS['PROCESSED_DATA']])
+    processed_data_path = directory.joinPath([outputPath, config.SUBDIRS['PROCESSED_DATA']])
     directory.createPath(processed_data_path)
-    local_summaries_path = directory.joinPath([analysisPath, config.SUBDIRS['LOCAL_SUMMARIES']])
+    local_summaries_path = directory.joinPath([outputPath, config.SUBDIRS['LOCAL_SUMMARIES']])
     directory.createPath(local_summaries_path)
-    xml_path = directory.joinPath([analysisPath, config.SUBDIRS['LOCAL_XMLS']])
+    xml_path = directory.joinPath([outputPath, config.SUBDIRS['LOCAL_XMLS']])
     directory.createPath(xml_path)
 
-    raw_data.RawData(analysisPath, processed_data_path, unprocessed_data_path, xml_path, local_summaries_path, sourceDataPath,
+    raw_data.RawData(outputPath, processed_data_path, unprocessed_data_path, xml_path, local_summaries_path, sourceDataPath,
                      directory.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]), atrribute_list)
 
     dateFolderPaths = directory.getChildrenPaths(unprocessed_data_path)
@@ -42,7 +42,7 @@ def auto(sourceDataPath, analysisPath, slice_range):
         date = directory.getNameFromPath(dateFolderPath, -1)
         directory.createPath(analysisPath)
         for dataPath in dataPaths:
-            rl.debug("auto() dataPath: " + dataPath)
+            rl.debug("multi() dataPath: " + dataPath)
             bxh.wrapEPIdata(dataPath, analysisPath)
             bxh.analyzeSlices(analysisPath, slice_range)
             loc_summary_path = directory.joinPath([ analysisPath, config.LOCAL_SUMMARY_FILE ])
@@ -51,11 +51,11 @@ def auto(sourceDataPath, analysisPath, slice_range):
         directory.compress(dateFolderPath, directory.joinPath([processed_data_path,date+directory.ARCHIVE_EXTENSION]))
 
 
-    qa_csv.save_global_summary(xml_path, atrribute_list, directory.joinPath([analysisPath, config.GLOBAL_SUMMARY_FILE]) )
+    qa_csv.save_global_summary(xml_path, atrribute_list, directory.joinPath([outputPath, config.GLOBAL_SUMMARY_FILE]) )
 
-    data = qa_csv.read_csv(directory.joinPath([analysisPath, config.GLOBAL_SUMMARY_FILE]))
+    data = qa_csv.read_csv(directory.joinPath([outputPath, config.GLOBAL_SUMMARY_FILE]))
     rl.debug("data: " + str(data))
-    plot_data.plot_QA(data, config.PLOTS, analysisPath)
+    plot_data.plot_QA(data, config.PLOTS, outputPath)
 
     # finish and has the runtime log
     rl.info(config.RUNTIME_STOP)
@@ -104,7 +104,7 @@ def is_dicom_dict_QA(dicom_info):
 
     return True
 
-def manual(sourceDataPath, analysisPath, slice_range):
+def single(sourceDataPath, analysisPath, slice_range):
     atrribute_list = config.ATTRIBUTE_LIST
     bxh.wrapEPIdata(sourceDataPath, analysisPath)
     bxh.analyzeSlices(analysisPath, slice_range)
@@ -118,7 +118,7 @@ if __name__ == "__main__":
                                      prog='QA for fMRI at MCB, UJ',
                                      usage='python fmriQA.py -mode ',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-mode', help='Choose "manual" or "auto" mode', default='manual')
+    parser.add_argument('-mode', help='Choose "single" or "multi" mode', default='single')
     parser.add_argument('-input', help='Path to folder with single set of EPI data', default=config.SUBDIRS['UNPROCESSED_DATA'])
     parser.add_argument('-output', help='Output path', default=config.SUBDIRS['PROCESSED_DATA'])
 
@@ -129,8 +129,8 @@ if __name__ == "__main__":
     parser.add_argument('-slices', help='Slices of measurement to be analysed', default=slice_list)
     args = parser.parse_args()
 
-    if not (args.mode == 'manual' or args.mode == 'auto'):
-        message = 'The allowed modes are: "manual" and "auto". The mode used was: ' + args.mode
+    if not (args.mode == 'single' or args.mode == 'multi'):
+        message = 'The allowed modes are: "single" and "multi". The mode used was: ' + args.mode
         rl.error(message)
         raise ValueError(message)
 
@@ -147,12 +147,12 @@ if __name__ == "__main__":
             rl.error(message)
             raise ValueError(message)
 
-    if args.mode == 'auto':
-        auto(args.input, args.output, slice_list)
+    if args.mode == 'multi':
+        multi(args.input, args.output, slice_list)
         exit(0)
 
-    if args.mode == 'manual':
-        manual(args.input, args.output, slice_list)
+    if args.mode == 'single':
+        single(args.input, args.output, slice_list)
         exit(0)
     else:
         raise Exception("Invalid mode selected")
