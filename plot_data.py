@@ -8,6 +8,8 @@ import my_logger as l
 def plot_QA(data, plots, dirPath):
     rl = l.RuntimeLogger()
     rl.info("plot_QA start")
+    graphs_path = directory.joinPath([dirPath,'graphs'])
+    directory.createPath(graphs_path)
 
     rl.info("plot_QA prepare data")
     time_points = []
@@ -150,12 +152,10 @@ def plot_QA(data, plots, dirPath):
             rl.info("plot_QA " + plots[plot_id]['title'] + " done")
 
         auto_open = False #do not open the web browser upon saving
-        graphs_path = directory.joinPath([dirPath,'graphs'])
-        directory.createPath(graphs_path)
         file_path = directory.joinPath([graphs_path,'QA_results' + str(plot_id) + '.html'])
         plotly.offline.plot(figure, filename=file_path, show_link=False, auto_open=auto_open)
-        rl.info("plot_QA; files generated")
-        template_source_path = directory.joinPath([directory.getFileDirectory(__file__),'graphs','plotly_dashboard'])
-        template_destination_path = directory.joinPath([graphs_path,'plotly_dashboard'])
-        directory.copy_folder_contents(template_source_path,template_destination_path)
-        rl.info("plot_QA end; copied template")
+        rl.info("plot_QA; file " + file_path + " generated")
+    template_source_path = directory.joinPath([directory.getFileDirectory(__file__),'graphs','plotly_dashboard'])
+    template_destination_path = directory.joinPath([graphs_path,'plotly_dashboard'])
+    directory.copy_folder_contents(template_source_path,template_destination_path)
+    rl.info("plot_QA end; copied template")
