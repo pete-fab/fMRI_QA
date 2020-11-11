@@ -231,7 +231,7 @@ def copy_folder_contents(source_directory_path, destination_dir_path):
         copy_tree(source_directory_path, destination_dir_path)
         return
 
-    print "Tried to copy contents of non-existent directory."
+    print "Tried to copy contents of non-existent directory: " + source_directory_path
 
 if __name__ == "__main__":
     # print getFileName("a/b/c.txt")
