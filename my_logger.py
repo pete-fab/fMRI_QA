@@ -124,14 +124,14 @@ class RuntimeLogger(GeneralLogger):
     def __init__(self):
         GeneralLogger.__init__(self)
         self.__l_path = directory.joinPath([self.get_log_dir(),
-                                            "." + strftime("%Y-%m-%d_%H-%M-%S", localtime()) + config.RUNTIME_LOG
+                                            "." + strftime("%Y-%m-%d", localtime()) + config.RUNTIME_LOG
                                             ])
         print "Runtime logger path " + self.__l_path
-        self.__myhandler = logging.FileHandler(self.__l_path, mode='a', encoding=None, delay=False)
-        self.__myhandler.setLevel(logging.INFO)
+        self.__myhandler = logging.FileHandler(self.__l_path, mode='w', encoding=None, delay=False)
+        self.__myhandler.setLevel(logging.DEBUG)
         self.__myhandler.setFormatter(self.get_formatter())
         self._my_child = self.getChild('RunTimeLogger')
-        self._my_child.parent.setLevel(logging.INFO)  # This is a hack.
+        self._my_child.parent.setLevel(logging.DEBUG)  # This is a hack.
         # Otherwise it is set to logging.WARNING and info and debug are not logged. Because child cannot log more than a parent
         self._my_child.addHandler(self.__myhandler)  # set child handler
 
@@ -157,6 +157,7 @@ if __name__ == "__main__":
 
     r = RuntimeLogger()
     r.critical("runtime critical")
+    r.debug("debug")
     # a.critical("2nd critical")
 
     # expected output:
