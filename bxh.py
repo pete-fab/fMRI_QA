@@ -45,6 +45,7 @@ def fmriQaAnalysis(workingDir,sliceNumber):
 
 def analyzeSlices(workingDir,sliceList):
     rl.info('To execute bxh slice analysis on : ' + workingDir)
+    rl.info('analyzing for slices: ' + str(sliceList))
     for zslice in sliceList:
         fmriQaAnalysis(workingDir, zslice)
     rl.info('Done bxh slice analysis on : ' + workingDir)

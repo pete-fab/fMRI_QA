@@ -5,53 +5,26 @@ import directory
 import my_logger as l
 
 
-def plot_QA(data, plots):
+def plot_QA(data, plots, dirPath):
     rl = l.RuntimeLogger()
     rl.info("plot_QA start")
+    graphs_path = directory.joinPath([dirPath,'graphs'])
+    directory.createPath(graphs_path)
 
     rl.info("plot_QA prepare data")
     time_points = []
+    rl.debug("data " + str(data))
     for seriesDate in data['seriesIndex']:
-        time_points.append(seriesDate[:4] + '-' + seriesDate[4:6] + '-' + seriesDate[6:8])
+        date = str(seriesDate)
+        time_points.append(date[:4] + '-' + date[4:6] + '-' + date[6:8])
+
+    rl.debug("time_points: " + str(time_points))
 
     rl.info("plot_QA calculate averages across slices")
-    averaged_data = {}
-    for data_type in data:
-        temp_data = {}
-        same_date_point = {}
-        for i in range(0, len (time_points)):
-            if time_points[i] in temp_data:
-                try:
-                    if data_type == 'sliceIndex':
-                        raise ValueError
-                    temp_data[time_points[i]] = temp_data[time_points[i]] + float(data[data_type][i])
-                except ValueError:
-                    temp_data[time_points[i]] = temp_data[time_points[i]] + ";" + data[data_type][i]
-                same_date_point[time_points[i]] = same_date_point[time_points[i]] + 1
-            else:
-                try:
-                    if data_type == 'sliceIndex':
-                        raise ValueError
-                    temp_data[time_points[i]] = float(data[data_type][i])
-                except ValueError:
-                    temp_data[time_points[i]] = data[data_type][i]
-                same_date_point[time_points[i]] = 1
-
-        temp_average_data_type = []
-        for key in temp_data:
-            try:
-                temp_average_data_type.append(temp_data[key]/same_date_point[key])
-            except TypeError:
-                temp_average_data_type.append(temp_data[key] )
-        averaged_data[data_type] = temp_average_data_type
-
-    data = averaged_data
-    time_points = []
-    for key in same_date_point:
-        time_points.append(key)
 
     rl.info("plot_QA prepare plots")
     time_points_sorted = sorted(time_points)
+    rl.debug("time_points_sorted: " + str(time_points_sorted))
     time_point_sorted_idxs = sorted(range(len(time_points)), key=lambda k: time_points[k])
     time_points_rev = time_points_sorted[::-1]  # time points reversed
     range_colors = {'FWHMX': 'rgba(25,87,194,0.6)', 'FWHMZ': 'rgba(10,160,55,0.6)', 'FWHMY': 'rgba(235,195,21,0.6)'}
@@ -89,7 +62,6 @@ def plot_QA(data, plots):
                 y=upper_bound_data + lower_bound_data[::-1],
                 fill='tozerox',
                 fillcolor=fillcolor,
-                line=go.Line(color='transparent'),
                 showlegend=True,
                 name=data_name +" range",
                 hoveron="points+fills",
@@ -180,6 +152,10 @@ def plot_QA(data, plots):
             rl.info("plot_QA " + plots[plot_id]['title'] + " done")
 
         auto_open = False #do not open the web browser upon saving
-        file_path = directory.joinPath([directory.getFileDirectory(__file__),'graphs', 'QA_results' + str(plot_id) + '.html'])
+        file_path = directory.joinPath([graphs_path,'QA_results' + str(plot_id) + '.html'])
         plotly.offline.plot(figure, filename=file_path, show_link=False, auto_open=auto_open)
-        rl.info("plot_QA end; files generated")
+        rl.info("plot_QA; file " + file_path + " generated")
+    template_source_path = directory.joinPath([directory.getFileDirectory(__file__),'graphs','plotly_dashboard'])
+    template_destination_path = directory.joinPath([graphs_path,'plotly_dashboard'])
+    directory.copy_folder_contents(template_source_path,template_destination_path)
+    rl.info("plot_QA end; copied template")

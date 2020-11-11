@@ -18,29 +18,19 @@ import argparse
 rl = l.RuntimeLogger()
 
 
-def auto():
+def multi(sourceDataPath, outputPath, slice_range):
     rl.info(config.RUNTIME_START)
-    if config.IS_DEBUG:
-        rl.info("running in debug mode")
-        slice_range = config.SLICE_RANGE_DEBUG
-        rootDir = directory.sanitizePath(config.DEBUG_DIR)
-        atrribute_list = config.ATTRIBUTE_LIST
-    else:
-        rl.info("running in normal mode")
-        slice_range = config.SLICE_RANGE
-        rootDir = directory.sanitizePath(config.DATA_DIR)
-        atrribute_list = config.ATTRIBUTE_LIST
-    pacsDir = config.PACS_DIR
-    unprocessed_data_path = directory.joinPath([rootDir, config.SUBDIRS['UNPROCESSED_DATA']])
+    atrribute_list = config.ATTRIBUTE_LIST
+    unprocessed_data_path = directory.joinPath([outputPath, config.SUBDIRS['UNPROCESSED_DATA']])
     directory.createPath(unprocessed_data_path)
-    processed_data_path = directory.joinPath([rootDir, config.SUBDIRS['PROCESSED_DATA']])
+    processed_data_path = directory.joinPath([outputPath, config.SUBDIRS['PROCESSED_DATA']])
     directory.createPath(processed_data_path)
-    local_summaries_path = directory.joinPath([rootDir, config.SUBDIRS['LOCAL_SUMMARIES']])
+    local_summaries_path = directory.joinPath([outputPath, config.SUBDIRS['LOCAL_SUMMARIES']])
     directory.createPath(local_summaries_path)
-    xml_path = directory.joinPath([rootDir, config.SUBDIRS['LOCAL_XMLS']])
+    xml_path = directory.joinPath([outputPath, config.SUBDIRS['LOCAL_XMLS']])
     directory.createPath(xml_path)
 
-    raw_data.RawData(rootDir, processed_data_path, unprocessed_data_path, xml_path, local_summaries_path, pacsDir,
+    raw_data.RawData(outputPath, processed_data_path, unprocessed_data_path, xml_path, local_summaries_path, sourceDataPath,
                      directory.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]), atrribute_list)
 
     dateFolderPaths = directory.getChildrenPaths(unprocessed_data_path)
@@ -52,6 +42,7 @@ def auto():
         date = directory.getNameFromPath(dateFolderPath, -1)
         directory.createPath(analysisPath)
         for dataPath in dataPaths:
+            rl.debug("multi() dataPath: " + dataPath)
             bxh.wrapEPIdata(dataPath, analysisPath)
             bxh.analyzeSlices(analysisPath, slice_range)
             loc_summary_path = directory.joinPath([ analysisPath, config.LOCAL_SUMMARY_FILE ])
@@ -60,10 +51,11 @@ def auto():
         directory.compress(dateFolderPath, directory.joinPath([processed_data_path,date+directory.ARCHIVE_EXTENSION]))
 
 
-    qa_csv.save_global_summary(xml_path, atrribute_list, directory.joinPath([rootDir, config.GLOBAL_SUMMARY_FILE]) )
+    qa_csv.save_global_summary(xml_path, atrribute_list, directory.joinPath([outputPath, config.GLOBAL_SUMMARY_FILE]) )
 
-    data = qa_csv.read_csv(directory.joinPath([rootDir, config.GLOBAL_SUMMARY_FILE]))
-    plot_data.plot_QA(data, config.PLOTS)
+    data = qa_csv.read_csv(directory.joinPath([outputPath, config.GLOBAL_SUMMARY_FILE]))
+    rl.debug("data: " + str(data))
+    plot_data.plot_QA(data, config.PLOTS, outputPath)
 
     # finish and has the runtime log
     rl.info(config.RUNTIME_STOP)
@@ -83,11 +75,14 @@ def sanitizeDataFolders(pathList):
             continue
         if not directory.isContentsDICOM(path):
             print path + " contains non DICOM files!!"
-            raise TypeError
+            raise TypeError(path + " contains non DICOM files!!")
     return pathList
 
 
 def verify_is_QA_DICOM(file_path):
+    if "DICOMDIR" == directory.getFileName(file_path):
+        return False
+
     if not directory.isDICOM(file_path):
         return False
 
@@ -109,11 +104,9 @@ def is_dicom_dict_QA(dicom_info):
 
     return True
 
-def manual(dataPath, analysisPath, slice_range):
-    directory.createPath(analysisPath)
+def single(sourceDataPath, analysisPath, slice_range):
     atrribute_list = config.ATTRIBUTE_LIST
-
-    bxh.wrapEPIdata(dataPath, analysisPath)
+    bxh.wrapEPIdata(sourceDataPath, analysisPath)
     bxh.analyzeSlices(analysisPath, slice_range)
     loc_summary_path = directory.joinPath([analysisPath, config.LOCAL_SUMMARY_FILE])
     qa_csv.save_local_summary_only(analysisPath, atrribute_list, loc_summary_path)
@@ -125,7 +118,7 @@ if __name__ == "__main__":
                                      prog='QA for fMRI at MCB, UJ',
                                      usage='python fmriQA.py -mode ',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-mode', help='Choose "manual" or "auto" mode', default='manual')
+    parser.add_argument('-mode', help='Choose "single" or "multi" mode (multi includes graphs)', default='single')
     parser.add_argument('-input', help='Path to folder with single set of EPI data', default=config.SUBDIRS['UNPROCESSED_DATA'])
     parser.add_argument('-output', help='Output path', default=config.SUBDIRS['PROCESSED_DATA'])
 
@@ -136,24 +129,32 @@ if __name__ == "__main__":
     parser.add_argument('-slices', help='Slices of measurement to be analysed', default=slice_list)
     args = parser.parse_args()
 
-    if not (args.mode == 'manual' or args.mode == 'auto'):
-        message = 'The allowed modes are: "manual" and "auto". The mode used was: ' + args.mode
+    if not (args.mode == 'single' or args.mode == 'multi'):
+        message = 'The allowed modes are: "single" and "multi". The mode used was: ' + args.mode
         rl.error(message)
         raise ValueError(message)
 
-    if args.mode == 'auto':
-        message = 'Mode "auto" is not implemented fully. The program will terminate now.'
-        rl.warning(message)
-        print message
-        raise FutureWarning(message)
-        auto()
+    if(not directory.isDir(args.input)):
+        raise Exception("input directory does not exist")
+    
+    directory.createPath(args.output)
 
-
-    if args.mode == 'manual':
+    if args.slices != "":
         try:
             slice_list = map(int, args.slices.split(","))
         except:
             message = 'There is an error in the slice list: ' + args.slices
             rl.error(message)
             raise ValueError(message)
-        manual(args.input, args.output, slice_list)
+
+    rl.info("Running with slices: " + str(slice_list))
+
+    if args.mode == 'multi':
+        multi(args.input, args.output, slice_list)
+        exit(0)
+
+    if args.mode == 'single':
+        single(args.input, args.output, slice_list)
+        exit(0)
+    else:
+        raise Exception("Invalid mode selected")

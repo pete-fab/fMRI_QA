@@ -13,7 +13,7 @@ logger = l.RuntimeLogger()
 
 
 class RawData(object):
-    def __init__(self, local_root_path, processed_path, unprocessed_path, xml_path, local_summaries_path, server_path,
+    def __init__(self, local_root_path, processed_path, unprocessed_path, xml_path, local_summaries_path, source_data_path,
                  summary_file_path, attribute_list):
 
         local_path = local_root_path
@@ -22,7 +22,7 @@ class RawData(object):
         self.__validate_dirs(unprocessed_path,"unprocessed_path")
         self.__validate_dirs(xml_path,"xml_path")
         self.__validate_dirs(local_path, "local_path")
-        self.__validate_dirs(server_path, "server_path")
+        self.__validate_dirs(source_data_path, "source_data_path")
         self.__validate_dirs(local_summaries_path, "local_summaries_path")
 
 
@@ -34,7 +34,7 @@ class RawData(object):
         self.__xml_path = xml_path
         self.__l_path = local_path
         self.__local_summaries_path = local_summaries_path
-        self.__s_path = server_path
+        self.__s_path = source_data_path
         self.__analysed_dates = set()
         self.__summary_path_unvalidated = summary_file_path
         self.__summary_path = ""
@@ -60,18 +60,19 @@ class RawData(object):
     def set_local_path(self, local_path):
         self.__l_path = local_path
 
-    def set_server_path(self, server_path):
-        self.__s_path = server_path
+    def set_source_data_path(self, source_data_path):
+        self.__s_path = source_data_path
 
     def __retrieve_local_sets(self):
         logger.debug("__retrieve_local_sets started")
         if not self.__is_summary_valid and self.__is_archive_files_valid:
             # Remake the global summary
+            logger.warning("remaking global summary!")
             self.__fix_summary_from_local_archives()
 
-        logger.info(str(self.__analysed_dates))
+        logger.info("__analysed_dates: " + str(self.__analysed_dates))
         self.__get_dates_from_local_archives()
-        logger.info(str(self.__analysed_dates))
+        logger.info("__analysed_dates: " + str(self.__analysed_dates))
         #Am i not doubling the functionality here?
         # if self.__is_summary_valid:
         #     self.__get_dates_from_summary()
@@ -79,23 +80,24 @@ class RawData(object):
 
 
     def __retrieve_server_sets(self):
-        dir_names = d.getChildrenFolders(self.__s_path)
-        dir_names = sorted(dir_names, reverse=True)
+        logger.debug("__retrieve_server_sets inside path: " + self.__s_path)
+        dir_names = d.getAllDescendants(self.__s_path)
+        logger.debug("__retrieve_server_sets " + str(dir_names))
         for dn in dir_names:
-            date_time = dt.datetime(int(dn[0:4]), int(dn[4:6]), int(dn[6:]), 0, 0, 0)
-            # print date_time
-            if not self.__analysed_dates.issuperset(set([date_time])):
-            # if datetime > self.__datetime:
-                self.__analysed_dates.add(date_time)
-                date_string = "{:%Y%m%d}".format(date_time)
-                sub_paths = d.getChildrenPaths(d.joinPath([self.__s_path, date_string]))
-                for sp in sub_paths:
-                    if d.isContentsDICOM(sp):
-                        # In this directory there should be only DICOMs - so first file is good as any
-                        file_path = d.getOneFilePath(sp)
-                        if fmriQA.verify_is_QA_DICOM(file_path):
-                            dest = d.joinPath([self.__up_path, date_string, config.DATA_SERIESDESCRIPTION])
-                            d.copy_folder_contents(sp, dest)
+            file_path = d.getOneFilePath(dn)
+            if(file_path == None):
+                continue
+            
+            if(d.isDICOM(file_path) and fmriQA.verify_is_QA_DICOM(file_path)):
+                logger.debug("This is dicom: " + str(file_path))
+                dicom_info = dicom.read_file(file_path)
+                date_time = dt.datetime(int(dicom_info.StudyDate[0:4]), int(dicom_info.StudyDate[4:6]), int(dicom_info.StudyDate[6:8]), 0, 0, 0)
+                if not self.__analysed_dates.issuperset(set([date_time])):
+                    self.__analysed_dates.add(date_time)
+                    dest = d.joinPath([self.__up_path, dicom_info.StudyDate, config.DATA_SERIESDESCRIPTION])
+                    logger.debug("dest: " + str(dest))
+                    d.copy_folder_contents(dn, dest)                
+
 
     def __validate_local_archives(self):
         logger.debug("__validate_local_archives started")
@@ -224,7 +226,7 @@ if __name__ == "__main__":
     else:
         atrribute_list = config.ATTRIBUTE_LIST
     data = RawData(config.DEBUG_DIR,
-                   config.PACS_DIR,
+                   config.SOURCE_DATA_DIR,
                    d.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]),
                    atrribute_list
                    )
