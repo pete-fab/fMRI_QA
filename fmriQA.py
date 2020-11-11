@@ -65,7 +65,7 @@ def auto():
 
     data = qa_csv.read_csv(directory.joinPath([rootDir, config.GLOBAL_SUMMARY_FILE]))
     rl.debug("data: " + str(data))
-    plot_data.plot_QA(data, config.PLOTS)
+    plot_data.plot_QA(data, config.PLOTS, rootDir)
 
     # finish and has the runtime log
     rl.info(config.RUNTIME_STOP)
