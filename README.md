@@ -14,18 +14,21 @@ To see the available options run
 ```
 docker run -it neuromcb/fmri_qa:latest -h
 ```
+Other parameters that can be modified are stored in `config.py`.
 
-To run single analysis map your local drive into the docker container:
+To run **single** analysis on default parameters, map your local drive into the docker container:
 ```
-docker run -it -v "C:\Data":/data neuromcb/fmri_qa:latest -input /data/some_folder/ -output /data/some_other_folder/
+docker run -it -v "C:\Data":/data neuromcb/fmri_qa:latest -mode single -input /data/some_folder/ -output /data/some_other_folder/
 ```
 
-## Post script
+To run **multi** analysis on default parameters:
+```
+docker run -it -v "C:\Data":/data neuromcb/fmri_qa:latest -mode single -input /data/some_folder/ -output /data/some_other_folder/
+```
 
-Features that will be added in due course:
+## Mode description
 
-1. Automatic restructuring of QA data based on DICOM tag values.  Package that could be used to accomplish this: https://github.com/suever/dicomSort or https://github.com/pete-fab/organize_DICOM
-2. (possibly) Automatic pulling of required images from DICOM node. Python packages that could be used to accomplish this: http://docs.openrem.org/en/0.7.1/index.html, http://gdcm.sourceforge.net/html/pages.html
-3. Automatic generation of interactive charts. Packages: https://plot.ly/python/, http://matplotlib.org/gallery.html, http://bokeh.pydata.org/en/latest/
-4. Change how data is being compressed after the analysis.
+* `single` mode will only generate tabular results (csv file)
+* `multi` mode will generate tabular results and graphs. The gtaphs generated in the `-output` folder. To see full reports follow: `output/graphs/plotly_dashboard/index.html`
+
                          

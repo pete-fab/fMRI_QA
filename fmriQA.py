@@ -118,7 +118,7 @@ if __name__ == "__main__":
                                      prog='QA for fMRI at MCB, UJ',
                                      usage='python fmriQA.py -mode ',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-mode', help='Choose "single" or "multi" mode', default='single')
+    parser.add_argument('-mode', help='Choose "single" or "multi" mode (multi includes graphs)', default='single')
     parser.add_argument('-input', help='Path to folder with single set of EPI data', default=config.SUBDIRS['UNPROCESSED_DATA'])
     parser.add_argument('-output', help='Output path', default=config.SUBDIRS['PROCESSED_DATA'])
 
