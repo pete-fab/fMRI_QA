@@ -1,14 +1,9 @@
-DATA_DIR = '/media/sf_MAGAZYN/Data/QA/QA_fMRI_data/'
 SUBDIRS = { 'PROCESSED_DATA': 'processed',
             'UNPROCESSED_DATA': 'unprocessed',
             'LOCAL_SUMMARIES': 'local_summaries',
             'LOCAL_XMLS': 'local_xmls'
             }
 
-SOURCE_DATA_DIR = '/data/debug/'
-DICOMSERVER_DIR = SOURCE_DATA_DIR
-DICOMSERVER_AET = 'PYNETDICOM'
-DICOMSERVER_PORT = 9999
 DATA_REQUESTINGPHYSICIAN = "fMRI"
 DATA_SERIESDESCRIPTION = "fBIRN_epi"
 DATA_REFERRINGPHYSICIANNAME = "QA"
@@ -28,11 +23,8 @@ RUNTIME_LOG = '.runtime.rlog'
 RUNTIME_START = 'qa_script_start'
 RUNTIME_STOP = 'qa_script_stop'
 
-IS_SAVE_ANALYSIS_FILES = True
-IS_SAVE_ORIGINAL_FILES = True
-
 IS_DEBUG = False
-DEBUG_DIR = '/media/sf_MAGAZYN/Data/QA/QA_fMRI_debug/'
+DEBUG_DIR = '/data/QA/QA_fMRI_debug3/'
 SLICE_RANGE_DEBUG = xrange(15, 18, 5)
 ATTRIBUTE_LIST_DEBUG = ['percentFluc', 'drift', 'SNR', 'SFNR']
 
