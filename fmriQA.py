@@ -147,6 +147,8 @@ if __name__ == "__main__":
             rl.error(message)
             raise ValueError(message)
 
+    rl.info("Running with slices: " + str(slice_list))
+
     if args.mode == 'multi':
         multi(args.input, args.output, slice_list)
         exit(0)
