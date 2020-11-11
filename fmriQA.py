@@ -134,10 +134,10 @@ if __name__ == "__main__":
         rl.error(message)
         raise ValueError(message)
 
-    if(not directory.isDir(sourceDataPath)):
+    if(not directory.isDir(args.input)):
         raise Exception("input directory does not exist")
     
-    directory.createPath(analysisPath)
+    directory.createPath(args.output)
 
     if args.slices != "":
         try:
@@ -148,9 +148,11 @@ if __name__ == "__main__":
             raise ValueError(message)
 
     if args.mode == 'auto':
-        auto(args.input, args.output, slice_range)
+        auto(args.input, args.output, slice_list)
+        exit(0)
 
     if args.mode == 'manual':
         manual(args.input, args.output, slice_list)
+        exit(0)
     else:
         raise Exception("Invalid mode selected")
