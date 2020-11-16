@@ -11,9 +11,9 @@ WRAP_NAME = 'WRAPPED.bxh'
 ANALYSIS_FOLDER = 'ANALYSIS'
 SLICE_ROOT = 'QA_z'
 
-rl = l.RuntimeLogger()
 
 def wrapEPIdata(dataDir,outputDir):
+    rl = l.RuntimeLogger(outputDir)
     dataFolder = directory.getNameFromPath(dataDir)
     rl.info(dataDir)
     # The relative output path is used to get absolute paths in the output
@@ -35,6 +35,7 @@ def wrapEPIdata(dataDir,outputDir):
 
 
 def fmriQaAnalysis(workingDir,sliceNumber):
+    rl = l.RuntimeLogger(workingDir)
     sliceFolder = directory.joinPath([workingDir, SLICE_ROOT])
     command = ['fmriqa_phantomqa.pl', '--zselect', str(sliceNumber), ' WRAPPED.bxh', sliceFolder + str(sliceNumber)]
     command = ' '.join(command)
@@ -44,6 +45,7 @@ def fmriQaAnalysis(workingDir,sliceNumber):
 
 
 def analyzeSlices(workingDir,sliceList):
+    rl = l.RuntimeLogger(workingDir)
     rl.info('To execute bxh slice analysis on : ' + workingDir)
     rl.info('analyzing for slices: ' + str(sliceList))
     for zslice in sliceList:

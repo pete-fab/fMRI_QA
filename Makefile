@@ -1,7 +1,8 @@
-VERSION = 1.0
+VERSION = 1.1
 
 build: 
 	docker build -t neuromcb/fmri_qa:dev .
+	docker build -t neuromcb/fmri_qa:latest .
 
 pull:
 	docker pull neuromcb/fmri_qa:$(VERSION)
