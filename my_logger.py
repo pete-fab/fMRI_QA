@@ -121,9 +121,9 @@ class GeneralLogger(logging.Logger):
 
 
 class RuntimeLogger(GeneralLogger):
-    def __init__(self):
+    def __init__(self, dir_path):
         GeneralLogger.__init__(self)
-        self.__l_path = directory.joinPath([self.get_log_dir(),
+        self.__l_path = directory.joinPath([dir_path,
                                             "." + strftime("%Y-%m-%d", localtime()) + config.RUNTIME_LOG
                                             ])
         print "Runtime logger path " + self.__l_path

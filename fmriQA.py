@@ -14,8 +14,6 @@ import qa_csv
 import raw_data
 import argparse
 
-# definition of logger singleton
-rl = l.RuntimeLogger()
 
 
 def multi(sourceDataPath, outputPath, slice_range):
@@ -138,6 +136,8 @@ if __name__ == "__main__":
         raise Exception("input directory does not exist")
     
     directory.createPath(args.output)
+    # definition of logger singleton
+    rl = l.RuntimeLogger(args.output)
 
     if args.slices != "":
         try:

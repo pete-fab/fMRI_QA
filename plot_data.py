@@ -6,7 +6,7 @@ import my_logger as l
 
 
 def plot_QA(data, plots, dirPath):
-    rl = l.RuntimeLogger()
+    rl = l.RuntimeLogger(dirPath)
     rl.info("plot_QA start")
     graphs_path = directory.joinPath([dirPath,'graphs'])
     directory.createPath(graphs_path)
