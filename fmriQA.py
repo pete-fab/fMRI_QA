@@ -3,7 +3,6 @@
 # Author: Piotr Faba, github: pete-fab
 # Most recent version available at: https://github.com/pete-fab/fMRI_QA
 import shutil
-import dicom
 import bxh
 import config
 import directory
@@ -76,31 +75,6 @@ def sanitizeDataFolders(pathList):
             raise TypeError(path + " contains non DICOM files!!")
     return pathList
 
-
-def verify_is_QA_DICOM(file_path):
-    if "DICOMDIR" == directory.getFileName(file_path):
-        return False
-
-    if not directory.isDICOM(file_path):
-        return False
-
-    dicom_info = dicom.read_file(file_path)
-    return is_dicom_dict_QA(dicom_info)
-
-
-def is_dicom_dict_QA(dicom_info):
-    # check if this is QA fMRI series
-    if not ("RequestingPhysician" in dicom_info
-            and "SeriesDescription" in dicom_info
-            and "ReferringPhysicianName" in dicom_info):
-        return False
-
-    if not (dicom_info.RequestingPhysician == config.DATA_REQUESTINGPHYSICIAN
-            and dicom_info.SeriesDescription == config.DATA_SERIESDESCRIPTION
-            and dicom_info.ReferringPhysicianName == config.DATA_REFERRINGPHYSICIANNAME):
-        return False
-
-    return True
 
 def single(sourceDataPath, analysisPath, slice_range):
     atrribute_list = config.ATTRIBUTE_LIST

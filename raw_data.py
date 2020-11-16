@@ -5,8 +5,6 @@ import hashfile
 import my_logger as l
 import directory as d
 import datetime as dt
-import dicom
-import fmriQA
 from glob import glob
 
 
@@ -88,7 +86,7 @@ class RawData(object):
             if(file_path == None):
                 continue
             
-            if(d.isDICOM(file_path) and fmriQA.verify_is_QA_DICOM(file_path)):
+            if(d.isDICOM(file_path) and self.verify_is_QA_DICOM(file_path)):
                 self._logger.debug("This is dicom: " + str(file_path))
                 dicom_info = dicom.read_file(file_path)
                 date_time = dt.datetime(int(dicom_info.StudyDate[0:4]), int(dicom_info.StudyDate[4:6]), int(dicom_info.StudyDate[6:8]), 0, 0, 0)
@@ -96,7 +94,11 @@ class RawData(object):
                     self.__analysed_dates.add(date_time)
                     dest = d.joinPath([self.__up_path, dicom_info.StudyDate, config.DATA_SERIESDESCRIPTION])
                     self._logger.debug("dest: " + str(dest))
-                    d.copy_folder_contents(dn, dest)                
+                    d.copy_folder_contents(dn, dest)
+                    for dicomFile in d.getFilePaths(dest):
+                        if not self.verify_is_frmiQA_DICOM(dicomFile):
+                            d.delete(dicomFile)
+                            self._logger.debug("Deleted file for not being fMRI QA: " + str(dicomFile))
 
 
     def __validate_local_archives(self):
@@ -219,6 +221,42 @@ class RawData(object):
             ret = False
         self._logger.debug("__fix_summary_from_local_archives finished with result: " + str(ret))
         return ret
+
+    def verify_is_QA_DICOM(self, file_path):
+        if "DICOMDIR" == d.getFileName(file_path):
+            return False
+
+        if not d.isDICOM(file_path):
+            return False
+
+        dicom_info = dicom.read_file(file_path)
+        return self.is_dicom_dict_QA(dicom_info)
+
+
+    def is_dicom_dict_QA(self, dicom_info):
+        self._logger.debug("dicom_info: " + str(dicom_info))
+        # check if this is QA fMRI series
+        if not ("RequestingPhysician" in dicom_info
+                and "SeriesDescription" in dicom_info
+                and "ReferringPhysicianName" in dicom_info):
+            return False
+
+        if not (dicom_info.RequestingPhysician == config.DATA_REQUESTINGPHYSICIAN
+                # and dicom_info.SeriesDescription == config.DATA_SERIESDESCRIPTION
+                and dicom_info.ReferringPhysicianName == config.DATA_REFERRINGPHYSICIANNAME):
+            return False
+
+        return True
+
+    def verify_is_frmiQA_DICOM(self, file_path):
+        if not self.verify_is_QA_DICOM(file_path):
+            return False
+
+        dicom_info = dicom.read_file(file_path)
+        if dicom_info.SeriesDescription != config.DATA_SERIESDESCRIPTION:
+            return False
+
+        return True
 
 if __name__ == "__main__":
     if config.IS_DEBUG:
