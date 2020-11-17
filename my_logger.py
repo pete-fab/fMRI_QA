@@ -22,8 +22,6 @@ class GeneralLogger(logging.Logger):
     __metaclass__ = Singleton
 
     def __init__(self, log_directory=os.path.dirname(os.path.realpath(__file__))):
-        if config.IS_DEBUG:
-            log_directory = config.DEBUG_DIR
         log_directory = directory.sanitizePath(log_directory)
         if not directory.isDir(log_directory):
             print "Directory to save logs does not exist: " + log_directory

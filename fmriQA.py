@@ -28,7 +28,7 @@ def multi(sourceDataPath, outputPath, slice_range):
     directory.createPath(xml_path)
 
     raw_data.RawData(outputPath, processed_data_path, unprocessed_data_path, xml_path, local_summaries_path, sourceDataPath,
-                     directory.joinPath([config.DEBUG_DIR, config.GLOBAL_SUMMARY_FILE]), atrribute_list)
+                     directory.joinPath([outputPath, config.GLOBAL_SUMMARY_FILE]), atrribute_list)
 
     dateFolderPaths = directory.getChildrenPaths(unprocessed_data_path)
 
