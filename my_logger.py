@@ -126,7 +126,10 @@ class RuntimeLogger(GeneralLogger):
                                             ])
         print "Runtime logger path " + self.__l_path
         self.__myhandler = logging.FileHandler(self.__l_path, mode='w', encoding=None, delay=False)
-        self.__myhandler.setLevel(logging.DEBUG)
+        logging_level = logging.INFO
+        if config.IS_DEBUG:
+            logging_level = logging.DEBUG
+        self.__myhandler.setLevel(logging_level)
         self.__myhandler.setFormatter(self.get_formatter())
         self._my_child = self.getChild('RunTimeLogger')
         self._my_child.parent.setLevel(logging.DEBUG)  # This is a hack.

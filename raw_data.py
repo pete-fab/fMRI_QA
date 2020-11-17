@@ -87,13 +87,13 @@ class RawData(object):
                 continue
             
             if(d.isDICOM(file_path) and self.verify_is_QA_DICOM(file_path)):
-                self._logger.debug("This is dicom: " + str(file_path))
+                self._logger.info("This is dicom: " + str(file_path))
                 dicom_info = dicom.read_file(file_path)
                 date_time = dt.datetime(int(dicom_info.StudyDate[0:4]), int(dicom_info.StudyDate[4:6]), int(dicom_info.StudyDate[6:8]), 0, 0, 0)
                 if not self.__analysed_dates.issuperset(set([date_time])):
                     self.__analysed_dates.add(date_time)
                     dest = d.joinPath([self.__up_path, dicom_info.StudyDate, config.DATA_SERIESDESCRIPTION])
-                    self._logger.debug("dest: " + str(dest))
+                    self._logger.info("Added new sample set: " + str(dest))
                     d.copy_folder_contents(dn, dest)
                     for dicomFile in d.getFilePaths(dest):
                         if not self.verify_is_frmiQA_DICOM(dicomFile):
