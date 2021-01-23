@@ -122,7 +122,7 @@ class RuntimeLogger(GeneralLogger):
     def __init__(self, dir_path):
         GeneralLogger.__init__(self)
         self.__l_path = directory.joinPath([dir_path,
-                                            "." + strftime("%Y-%m-%d", localtime()) + config.RUNTIME_LOG
+                                            "." + strftime("%Y-%m-%d_%H-%M-%S", localtime()) + config.RUNTIME_LOG
                                             ])
         print "Runtime logger path " + self.__l_path
         self.__myhandler = logging.FileHandler(self.__l_path, mode='w', encoding=None, delay=False)
