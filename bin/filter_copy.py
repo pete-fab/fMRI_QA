@@ -42,7 +42,7 @@ def main():
         file_paths += directory.getFilePaths(series_data_path,".dcm")
 
     dicom_paths = filter(lambda item: directory.isDICOM(item), file_paths)
-    rl.info(" Found total of " str(len(dicom_paths)) " dicom paths")
+    rl.info(" Found total of " + str(len(dicom_paths)) + " dicom paths")
     dicom_infos = map(lambda item: get_dicom_info(item), dicom_paths) 
     filtered_file_paths = filter(lambda item: item["project"] == correct_project, dicom_infos)
     copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_paths)
