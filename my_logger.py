@@ -136,6 +136,9 @@ class RuntimeLogger(GeneralLogger):
         # Otherwise it is set to logging.WARNING and info and debug are not logged. Because child cannot log more than a parent
         self._my_child.addHandler(self.__myhandler)  # set child handler
 
+    def get_path(self):
+        return self.__l_path
+
 
 # class AllLogger(GeneralLogger):
 #     def __init__(self):
