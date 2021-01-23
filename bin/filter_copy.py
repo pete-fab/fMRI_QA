@@ -25,7 +25,7 @@ def main():
     correct_project = args.project
 
     if(not directory.isDir(args.input)):
-        raise Exception("input directory does not exist")
+        raise Exception("input directory does not exist. Provided: " + str(args.input))
 
     directory.createPath(args.output)
     rl = l.RuntimeLogger(args.output)

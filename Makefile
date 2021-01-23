@@ -19,3 +19,18 @@ regenerate_afni_dockerfile:
 release:
 	docker build -t neuromcb/fmri_qa:$(VERSION) .
 	docker push neuromcb/fmri_qa:$(VERSION)
+
+build_filter_copy:
+	docker build -t neuromcb/fmri_qa:dev .
+	docker build -t neuromcb/fmri_qa:latest .
+	docker build --build-arg version=dev -t neuromcb/filter_copy:dev images/filter_copy
+	docker build --build-arg version=latest -t neuromcb/filter_copy:latest images/filter_copy
+
+push_filter_copy:
+	docker push neuromcb/filter_copy:dev
+
+
+release_filter_copy:
+	docker build -t neuromcb/fmri_qa:$(VERSION) .
+	docker build --build-arg version=$(VERSION) -t neuromcb/filter_copy:$(VERSION) images/filter_copy
+	docker push neuromcb/filter_copy:$(VERSION)
