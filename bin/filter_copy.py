@@ -42,6 +42,7 @@ def main():
         file_paths += directory.getFilePaths(series_data_path,".dcm")
 
     dicom_paths = filter(lambda item: directory.isDICOM(item), file_paths)
+    rl.info(" Found total of " str(len(dicom_paths)) " dicom paths")
     dicom_infos = map(lambda item: get_dicom_info(item), dicom_paths) 
     filtered_file_paths = filter(lambda item: item["project"] == correct_project, dicom_infos)
     copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_paths)
@@ -61,12 +62,19 @@ def get_dicom_info(dicom_path):
     dicom_info = dicom.read_file(dicom_path)
     info = {
         "path": dicom_path,
-        "project": dicom_info.ReferringPhysicianName,
-        "project2": dicom_info.StudyDescription,
-        "subject": dicom_info.RequestingPhysician,
-        "series": dicom_info.SeriesDescription,
+        "project": get_dicom_property(dicom_info, "ReferringPhysicianName"),
+        "project2": get_dicom_property(dicom_info, "StudyDescription"),
+        "subject": get_dicom_property(dicom_info, "RequestingPhysician"),
+        "series": get_dicom_property(dicom_info, "SeriesDescription"),
     }
     return info
+
+
+def get_dicom_property(dicom_info, dicom_property):
+    if (dicom_property in dicom_info):
+        return dicom_info.data_element(dicom_property).value 
+    else:
+        return "NotSet " + dicom_property
 
 
 def copy_files(dicom_info, output_path):
