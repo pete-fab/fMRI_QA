@@ -45,6 +45,7 @@ def main():
     rl.info(" Found total of " + str(len(dicom_paths)) + " dicom paths")
     dicom_infos = map(lambda item: get_dicom_info(item), dicom_paths) 
     filtered_file_paths = filter(lambda item: item["project"] == correct_project, dicom_infos)
+    rl.info(" " + str(len(filtered_file_paths)) + " files meets filtering criteria")
     copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_paths)
 
     # report the results to logger
