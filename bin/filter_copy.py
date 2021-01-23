@@ -65,16 +65,18 @@ def get_dicom_info(dicom_path):
         "path": dicom_path,
         "project": get_dicom_property(dicom_info, "ReferringPhysicianName"),
         "project2": get_dicom_property(dicom_info, "StudyDescription"),
-        "subject": get_dicom_property(dicom_info, "RequestingPhysician"),
+        "subject": get_dicom_property(dicom_info, "RequestingPhysician", "PatientID"),
         "series": get_dicom_property(dicom_info, "SeriesDescription"),
     }
     return info
 
 
-def get_dicom_property(dicom_info, dicom_property):
+def get_dicom_property(dicom_info, dicom_property, alternative_property = None):
     if (dicom_property in dicom_info):
         return dicom_info.data_element(dicom_property).value 
     else:
+        if(alternative_property in dicom_info):
+            return dicom_info.data_element(alternative_property).value 
         return "NotSet " + dicom_property
 
 
