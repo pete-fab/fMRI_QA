@@ -65,7 +65,7 @@ def get_dicom_info(dicom_path):
         "path": dicom_path,
         "project": get_dicom_property(dicom_info, "ReferringPhysicianName"),
         "project2": get_dicom_property(dicom_info, "StudyDescription"),
-        "subject": get_dicom_property(dicom_info, "RequestingPhysician", "PatientID"),
+        "subject": get_dicom_property(dicom_info, "PatientID"),
         "series": get_dicom_property(dicom_info, "SeriesDescription"),
     }
     return info
