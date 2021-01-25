@@ -16,13 +16,15 @@ def main():
                                      prog='DICOM filter copy at MCB, UJ',
                                      usage='python filter_copy.py -input /some/path -output /other/path -date 20200917 -project ReferringPhysicianName',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-input', help='Path to folder with folders and files', required=True)
-    parser.add_argument('-output', help='Output path', required=True)
-    parser.add_argument('-date', help='Search files created on date (YYMMDD); Default is current date', default=date_pacs_format)
+    parser.add_argument('-input', help='Path to folder with folders and files', required = True)
+    parser.add_argument('-output', help='Output path', required = True)
+    parser.add_argument('-date', help='Search files created on date (YYMMDD); Default is current date', default = date_pacs_format)
     parser.add_argument('-project', help='Set ReferringPhysicianName (project) which will be used to filter data')
+    parser.add_argument('-max_age', help='Set maximum participant age', default = 2000)
     
     args = parser.parse_args()
     correct_project = args.project
+    threshold_year = int(today.strftime("%Y")) - int(args.max_age)
 
     if(not directory.isDir(args.input)):
         raise Exception("input directory does not exist. Provided: " + str(args.input))
@@ -44,7 +46,7 @@ def main():
     dicom_paths = filter(lambda item: directory.isDICOM(item), file_paths)
     rl.info(" Found total of " + str(len(dicom_paths)) + " dicom paths")
     dicom_infos = map(lambda item: get_dicom_info(item), dicom_paths) 
-    filtered_file_paths = filter(lambda item: item["project"] == correct_project, dicom_infos)
+    filtered_file_paths = filter(lambda item: does_meet_criteria(item, correct_project, threshold_year), dicom_infos)
     rl.info(" " + str(len(filtered_file_paths)) + " files meets filtering criteria")
     copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_paths)
 
@@ -52,21 +54,37 @@ def main():
     if (len(copied_file_paths) > 0):
         rl.info(" For example, file " + copied_file_paths[0]["path"] + " is copied to " + copied_file_paths[0]["destination"] )
     rl.info(" Copied: " + str(len(copied_file_paths)) + " files")
-    not_this_project_files = filter(lambda item: item["project"] != correct_project, dicom_infos)
-    if (len(not_this_project_files) > 0):
-        rl.info(" Files omitted as classified to different project: " + str(not_this_project_files))
+    files_not_meeting_criteria = filter(lambda item: not does_meet_criteria(item, correct_project, threshold_year), dicom_infos)
+    if (len(files_not_meeting_criteria) > 0):
+        rl.info(" Number of files omitted for not meeting criteria: " + str(len(files_not_meeting_criteria)))
+        rl.info("Example of files omitted for not meeting criteria: " + str(files_not_meeting_criteria[0:3]).replace("},","},\n"))
     with open(rl.get_path(), 'r') as fin:
         print(fin.read())
 
 
+def does_meet_criteria(info_dict, correct_project, threshold_year):
+    if info_dict["project"] == correct_project:
+        return True
+
+    if info_dict["project"] == "NotSet ReferringPhysicianName" or info_dict["project"] is None or info_dict["project"] == "":
+        if info_dict["birth_year"] >= threshold_year:
+            return True
+
+    return False
+
+
 def get_dicom_info(dicom_path):
     dicom_info = dicom.read_file(dicom_path)
+    birth_date = get_dicom_property(dicom_info,"PatientBirthDate")
+    birth_year = int(birth_date[:4])
+    
     info = {
         "path": dicom_path,
         "project": get_dicom_property(dicom_info, "ReferringPhysicianName"),
         "project2": get_dicom_property(dicom_info, "StudyDescription"),
         "subject": get_dicom_property(dicom_info, "PatientID"),
         "series": get_dicom_property(dicom_info, "SeriesDescription"),
+        "birth_year": birth_year,
     }
     return info
 
