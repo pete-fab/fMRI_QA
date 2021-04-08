@@ -101,10 +101,13 @@ def get_dicom_property(dicom_info, dicom_property, alternative_property = None):
 
 
 def copy_files(dicom_info, output_path):
+    subject_prepared = dicom_info["subject"].replace("-","")
+    subject_prepared = subject_prepared.replace("_","")
+    subject_prepared = ''.join(subject_prepared.split())
     destination_dir = directory.joinPath([
         output_path, 
         dicom_info["project"], 
-        dicom_info["subject"], 
+        subject_prepared, 
         dicom_info["series"],
         ])
     directory.createPath(destination_dir)
