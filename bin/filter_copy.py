@@ -30,7 +30,9 @@ def main():
         raise Exception("input directory does not exist. Provided: " + str(args.input))
 
     directory.createPath(args.output)
-    rl = l.RuntimeLogger(args.output)
+    logs_path = directory.joinPath([args.output,"sync_logs"])
+    directory.createPath(logs_path)
+    rl = l.RuntimeLogger(logs_path)
     input_date_path = directory.joinPath([args.input, args.date])
     
     rl.info(" Initial parameter provided: " + str(args))
