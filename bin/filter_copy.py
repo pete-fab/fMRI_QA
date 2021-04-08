@@ -48,9 +48,13 @@ def main():
     dicom_paths = filter(lambda item: directory.isDICOM(item), file_paths)
     rl.info(" Found total of " + str(len(dicom_paths)) + " dicom paths")
     dicom_infos = map(lambda item: get_dicom_info(item), dicom_paths) 
-    filtered_file_paths = filter(lambda item: does_meet_criteria(item, correct_project, threshold_year), dicom_infos)
-    rl.info(" " + str(len(filtered_file_paths)) + " files meets filtering criteria")
-    copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_paths)
+    filtered_file_items = filter(lambda item: does_meet_criteria(item, correct_project, threshold_year), dicom_infos)
+    filtered_subjects_set = set()
+    filter(lambda item: filtered_subjects_set.add(item["subject"]), filtered_file_items)
+    rl.info(" " + str(len(filtered_file_items)) + " files meets filtering criteria")
+    rl.info(" Found these subject_ids: " + str((list(filtered_subjects_set))))
+    copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_items)
+    rl.info(" Copied these subject_ids: " + str((list(filtered_subjects_set))))
 
     # report the results to logger
     if (len(copied_file_paths) > 0):
