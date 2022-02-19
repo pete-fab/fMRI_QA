@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import datetime as dt
 import os, sys
 sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import directory
@@ -10,15 +9,12 @@ import my_logger as l
 
 
 def main():
-    today = dt.date.today()
-    date_pacs_format = today.strftime("%Y%m%d")
-    parser = argparse.ArgumentParser(description='This program copies selected DICOM files from one directory to another',
+    parser = argparse.ArgumentParser(description='This program copies selected Physiology files files from one directory to another',
                                      prog='DICOM filter copy at MCB, UJ',
-                                     usage='python filter_copy.py -input /some/path -output /other/path -date 20200917 -project ReferringPhysicianName',
+                                     usage='python copy_physio_files.py -input /some/path -output /other/path -date 20200917 -project ReferringPhysicianName',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-input', help='Path to folder with folders and files', required = True)
     parser.add_argument('-output', help='Output path', required = True)
-    parser.add_argument('-date', help='Search files created on date (YYMMDD); Default is current date', default = date_pacs_format)
     parser.add_argument('-project', help='Set ReferringPhysicianName (project) which will be used to filter data')
     parser.add_argument('-max_age', help='Set maximum participant age', default = 2000)
     
@@ -33,27 +29,30 @@ def main():
     logs_path = directory.joinPath([args.output,"sync_logs"])
     directory.createPath(logs_path)
     rl = l.RuntimeLogger(logs_path)
-    input_date_path = directory.joinPath([args.input, args.date])
-    
+     
     rl.info(" Initial parameter provided: " + str(args))
-    rl.info(" Copying dicoms from " + input_date_path + " to " + args.output)
+    rl.info(" Copying dicoms from " + args.input + " to " + args.output)
 
     # search and process files
-    series_data_paths = directory.getChildrenPaths(input_date_path)
-    rl.info(" Series found for date " + args.date + " : " + str(series_data_paths))
+    all_folder_paths = directory.getAllDescendants(args.input)
+    
+    physio_paths = filter(lambda item: "PHYSIOLOG" in directory.getNameFromPath(item), all_folder_paths)
+    
+    rl.info(" Physio folders found " + " : " + str(physio_paths))
     file_paths = []
-    for series_data_path in series_data_paths:
-        file_paths += directory.getFilePaths(series_data_path,".dcm")
+    for physio_path in physio_paths:
+        file_paths += directory.getFilePaths(physio_path,".IMA")
 
     dicom_paths = filter(lambda item: directory.isDICOM(item), file_paths)
     rl.info(" Found total of " + str(len(dicom_paths)) + " dicom paths")
     dicom_infos = map(lambda item: get_dicom_info(item), dicom_paths) 
-    filtered_file_items = filter(lambda item: does_meet_criteria(item, correct_project, threshold_year), dicom_infos)
+    filtered_file_items = filter(lambda item: does_meet_criteria(item, correct_project, threshold_year, "physio"), dicom_infos)
     filtered_subjects_set = set()
     filter(lambda item: filtered_subjects_set.add(item["subject"]), filtered_file_items)
     rl.info(" " + str(len(filtered_file_items)) + " files meets filtering criteria")
     rl.info(" Found these subject_ids: " + str((list(filtered_subjects_set))))
     copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_items)
+    print(copied_file_paths)
     rl.info(" Copied these subject_ids: " + str((list(filtered_subjects_set))))
 
     # report the results to logger
@@ -68,7 +67,10 @@ def main():
         print(fin.read())
 
 
-def does_meet_criteria(info_dict, correct_project, threshold_year):
+def does_meet_criteria(info_dict, correct_project, threshold_year, image_type):
+    if info_dict["type"] != image_type:
+        return False
+
     if info_dict["project"] == correct_project:
         return True
 
@@ -83,6 +85,11 @@ def get_dicom_info(dicom_path):
     dicom_info = dicom.read_file(dicom_path)
     birth_date = get_dicom_property(dicom_info,"PatientBirthDate")
     birth_year = int(birth_date[:4])
+
+    image_type = "regular"
+    if 'PHYSIO' in get_dicom_property(dicom_info, "ImageType"):
+        image_type = "physio"
+
     
     info = {
         "path": dicom_path,
@@ -90,6 +97,7 @@ def get_dicom_info(dicom_path):
         "project2": get_dicom_property(dicom_info, "StudyDescription"),
         "subject": get_dicom_property(dicom_info, "PatientID"),
         "series": get_dicom_property(dicom_info, "SeriesDescription"),
+        "type": image_type,
         "birth_year": birth_year,
     }
     return info
