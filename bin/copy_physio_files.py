@@ -10,7 +10,6 @@ import my_logger as l
 
 
 def main():
-    today = dt.date.today()
     parser = argparse.ArgumentParser(description='This program copies selected Physiology files files from one directory to another',
                                      prog='DICOM filter copy at MCB, UJ',
                                      usage='python copy_physio_files.py -input /some/path -output /other/path -date 20200917 -project ReferringPhysicianName',
@@ -21,22 +20,25 @@ def main():
     parser.add_argument('-max_age', help='Set maximum participant age', default = 2000)
     
     args = parser.parse_args()
-    correct_project = args.project
-    threshold_year = int(today.strftime("%Y")) - int(args.max_age)
+    copy_physio_files(args.input,args.output,args.project,args.max_age)
 
-    if(not directory.isDir(args.input)):
-        raise Exception("input directory does not exist. Provided: " + str(args.input))
+def copy_physio_files(input, output, project, max_age=2000):
+    today = dt.date.today()
+    if(not directory.isDir(input)):
+        raise Exception("input directory does not exist. Provided: " + str(input))
 
-    directory.createPath(args.output)
-    logs_path = directory.joinPath([args.output,"sync_logs"])
+    correct_project = project
+    threshold_year = int(today.strftime("%Y")) - int(max_age)
+    directory.createPath(output)
+    logs_path = directory.joinPath([output,"sync_logs"])
     directory.createPath(logs_path)
     rl = l.RuntimeLogger(logs_path)
      
-    rl.info(" Initial parameter provided: " + str(args))
-    rl.info(" Copying dicoms from " + args.input + " to " + args.output)
+    # rl.info(" Initial parameter provided: input" + str(input))
+    rl.info(" Copying dicoms from " + input + " to " + output)
 
     # search and process files
-    all_folder_paths = directory.getAllDescendants(args.input)
+    all_folder_paths = directory.getAllDescendants(input)
     
     physio_paths = filter(lambda item: "PHYSIOLOG" in directory.getNameFromPath(item), all_folder_paths)
     
@@ -53,7 +55,7 @@ def main():
     filter(lambda item: filtered_subjects_set.add(item["subject"]), filtered_file_items)
     rl.info(" " + str(len(filtered_file_items)) + " files meets filtering criteria")
     rl.info(" Found these subject_ids: " + str((list(filtered_subjects_set))))
-    copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_items)
+    copied_file_paths = map(lambda item: copy_files(item, output), filtered_file_items)
     rl.info(" Copied these subject_ids: " + str((list(filtered_subjects_set))))
 
     # report the results to logger
