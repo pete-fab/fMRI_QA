@@ -60,10 +60,11 @@ def main():
     if (len(copied_file_paths) > 0):
         rl.info(" For example, file " + copied_file_paths[0]["path"] + " is copied to " + copied_file_paths[0]["destination"] )
     rl.info(" Copied: " + str(len(copied_file_paths)) + " files")
-    files_not_meeting_criteria = filter(lambda item: not does_meet_criteria(item, correct_project, threshold_year), dicom_infos)
-    if (len(files_not_meeting_criteria) > 0):
-        rl.info(" Number of files omitted for not meeting criteria: " + str(len(files_not_meeting_criteria)))
-        rl.info("Example of files omitted for not meeting criteria: " + str(files_not_meeting_criteria[0:3]).replace("},","},\n"))
+    if(len(copied_file_paths) < len(dicom_infos)):
+        files_not_meeting_criteria = filter(lambda item: not does_meet_criteria(item, correct_project, threshold_year), dicom_infos)
+        if (len(files_not_meeting_criteria) > 0):
+            rl.info(" Number of files omitted for not meeting criteria: " + str(len(files_not_meeting_criteria)))
+            rl.info("Example of files omitted for not meeting criteria: " + str(files_not_meeting_criteria[0:3]).replace("},","},\n"))
     with open(rl.get_path(), 'r') as fin:
         print(fin.read())
 
