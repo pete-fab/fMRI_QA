@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime as dt
 import os, sys
 sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import directory
@@ -9,6 +10,7 @@ import my_logger as l
 
 
 def main():
+    today = dt.date.today()
     parser = argparse.ArgumentParser(description='This program copies selected Physiology files files from one directory to another',
                                      prog='DICOM filter copy at MCB, UJ',
                                      usage='python copy_physio_files.py -input /some/path -output /other/path -date 20200917 -project ReferringPhysicianName',
@@ -52,15 +54,14 @@ def main():
     rl.info(" " + str(len(filtered_file_items)) + " files meets filtering criteria")
     rl.info(" Found these subject_ids: " + str((list(filtered_subjects_set))))
     copied_file_paths = map(lambda item: copy_files(item, args.output), filtered_file_items)
-    print(copied_file_paths)
     rl.info(" Copied these subject_ids: " + str((list(filtered_subjects_set))))
 
     # report the results to logger
     if (len(copied_file_paths) > 0):
         rl.info(" For example, file " + copied_file_paths[0]["path"] + " is copied to " + copied_file_paths[0]["destination"] )
     rl.info(" Copied: " + str(len(copied_file_paths)) + " files")
-    files_not_meeting_criteria = filter(lambda item: not does_meet_criteria(item, correct_project, threshold_year), dicom_infos)
-    if (len(files_not_meeting_criteria) > 0):
+    if(len(copied_file_paths) < len(dicom_infos)):
+        files_not_meeting_criteria = filter(lambda item: not does_meet_criteria(item, correct_project, threshold_year, "physio"), dicom_infos)
         rl.info(" Number of files omitted for not meeting criteria: " + str(len(files_not_meeting_criteria)))
         rl.info("Example of files omitted for not meeting criteria: " + str(files_not_meeting_criteria[0:3]).replace("},","},\n"))
     with open(rl.get_path(), 'r') as fin:
