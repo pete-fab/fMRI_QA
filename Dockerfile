@@ -6,7 +6,7 @@ RUN apt-get update && \
         wget \
         python-pip
 
-RUN wget https://www.nitrc.org/frs/download.php/10144/bxh_xcede_tools-1.11.14-lsb30.x86_64.tgz \
+RUN wget --no-check-certificate https://www.nitrc.org/frs/download.php/10144/bxh_xcede_tools-1.11.14-lsb30.x86_64.tgz \
  && tar -xzf bxh_xcede_tools-1.11.14-lsb30.x86_64.tgz \
  && rm bxh_xcede_tools-1.11.14-lsb30.x86_64.tgz
 
